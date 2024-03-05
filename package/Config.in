@@ -2801,4 +2801,13 @@ menu "Text editors and viewers"
 	source "package/vim/Config.in"
 endmenu
 
+menu "Sipeed"
+	source "package/aic8800-sdio-firmware/Config.in"
+	source "package/cvitek-riscv64-musl-sysroot/Config.in"
+	source "package/lcdtest/Config.in"
+	source "package/tpudemo-sg200x/Config.in"
+endmenu
+
+
+
 endmenu
