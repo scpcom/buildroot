@@ -2862,6 +2862,7 @@ menu "Sipeed"
 	source "package/lcdtest/Config.in"
 	source "package/tpudemo-sg200x/Config.in"
 	source "package/xuantie-gdb/Config.in"
+	source "package/sg2002-codec-firmware/Config.in"
 endmenu
 
 
