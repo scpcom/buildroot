@@ -3,12 +3,14 @@ CVI_PINMUX_SITE = $(realpath $(TOPDIR)/../ramdisk/tools/cvi_pinmux)
 CVI_PINMUX_SITE_METHOD = local
 CVI_PINMUX_INSTALL_STAGING = YES
 
+ifeq ($(BR2_PACKAGE_CVI_PINMUX),y)
 ifeq ($(BR2_PACKAGE_CVI_PINMUX_CV180X),y)
     CVI_SRC_DIR = cv180x
 else ifeq ($(BR2_PACKAGE_CVI_PINMUX_SG200X),y)
     CVI_SRC_DIR = sg200x
 else
     $(error "Please select either CV180X or SG200X")
+endif
 endif
 
 define CVI_PINMUX_BUILD_CMDS
