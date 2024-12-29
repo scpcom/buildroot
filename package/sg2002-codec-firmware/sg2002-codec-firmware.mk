@@ -4,8 +4,9 @@
 #
 ################################################################################
 
-SG2002_CODEC_FIRMWARE_VERSION = 1e339b782642ce1b2c8aa81f9fdef212912a6a83
-SG2002_CODEC_FIRMWARE_SITE = $(call github,0x754C,sg2002_codec_fw,$(SG2002_CODEC_FIRMWARE_VERSION))
+SG2002_CODEC_FIRMWARE_VERSION = 1.0.0
+SG2002_CODEC_FIRMWARE_SITE = $(BR2_ROOTFS_OVERLAY)/usr/share/fw_vcodec
+SG2002_CODEC_FIRMWARE_SITE_METHOD = local
 
 define SG2002_CODEC_FIRMWARE_INSTALL_TARGET_CMDS
 	mkdir -pv $(TARGET_DIR)/usr/share/fw_vcodec/
