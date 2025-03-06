@@ -4,33 +4,23 @@ Date: Thu, 20 Feb 2025 21:46:50 +0100
 Subject: [PATCH] vison: kvm_mmf: split vpu into vi, vo, vpss and rgn
 
 ---
- vision/sg2002/components/kvm_mmf/CMakeLists.txt | 6 ++++--
+ support/sg2002/additional/kvm_mmf/CMakeLists.txt | 6 ++++--
  1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/vision/sg2002/components/kvm_mmf/CMakeLists.txt b/vision/sg2002/components/kvm_mmf/CMakeLists.txt
+diff --git a/support/sg2002/additional/kvm_mmf/CMakeLists.txt b/support/sg2002/additional/kvm_mmf/CMakeLists.txt
 index d4fdf95..ca7d340 100644
---- a/vision/sg2002/components/kvm_mmf/CMakeLists.txt
-+++ b/vision/sg2002/components/kvm_mmf/CMakeLists.txt
+--- a/support/sg2002/additional/kvm_mmf/CMakeLists.txt
++++ b/support/sg2002/additional/kvm_mmf/CMakeLists.txt
 @@ -55,7 +55,8 @@ if(CONFIG_SOPHGO_MIDDLEWARE_C_LIBRARY STREQUAL "musl")
-                                             ${mmf_lib_dir}/libsys.so
-                                             ${mmf_lib_dir}/libvdec.so
-                                             ${mmf_lib_dir}/libvenc.so
--                                            ${mmf_lib_dir}/libvpu.so
-+                                            ${mmf_lib_dir}/libgdc.so ${mmf_lib_dir}/librgn.so
-+                                            ${mmf_lib_dir}/libvi.so ${mmf_lib_dir}/libvo.so ${mmf_lib_dir}/libvpss.so
-                                             ${mmf_lib_dir}/3rd/libini.so)
-     else()
-         set(middleware_dynamic_lib_file     ${mmf_lib_dir}/libcvi_bin.so
-@@ -72,7 +73,8 @@ if(CONFIG_SOPHGO_MIDDLEWARE_C_LIBRARY STREQUAL "musl")
-                                             ${mmf_lib_dir}/libsys.so
-                                             ${mmf_lib_dir}/libvdec.so
-                                             ${mmf_lib_dir}/libvenc.so
--                                            ${mmf_lib_dir}/libvpu.so
-+                                            ${mmf_lib_dir}/libgdc.so ${mmf_lib_dir}/librgn.so
-+                                            ${mmf_lib_dir}/libvi.so ${mmf_lib_dir}/libvo.so ${mmf_lib_dir}/libvpss.so
-                                             ${mmf_lib_dir}/libz.so
-                                             ${mmf_lib_dir}/3rd/libini.so)
-     endif()
+                                         ${mmf_lib_dir}/libsys.so
+                                         ${mmf_lib_dir}/libvdec.so
+                                         ${mmf_lib_dir}/libvenc.so
+-                                        ${mmf_lib_dir}/libvpu.so
++                                        ${mmf_lib_dir}/libgdc.so ${mmf_lib_dir}/librgn.so
++                                        ${mmf_lib_dir}/libvi.so ${mmf_lib_dir}/libvo.so ${mmf_lib_dir}/libvpss.so
+                                         ${mmf_lib_dir}/3rd/libini.so)
+ elseif(CONFIG_SOPHGO_MIDDLEWARE_C_LIBRARY STREQUAL "glibc")
+     set(middleware_dynamic_lib_file     ${mmf_lib_dir}/libcvi_vb.so
 -- 
 2.34.1
 
