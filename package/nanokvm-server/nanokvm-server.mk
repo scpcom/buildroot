@@ -6,6 +6,7 @@
 
 NANOKVM_SERVER_VERSION = 58d5ab2d37244b1e1a68b925a5c23c324c489ad3
 NANOKVM_SERVER_SITE = $(call github,sipeed,NanoKVM,$(NANOKVM_SERVER_VERSION))
+NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm
 
 NANOKVM_SERVER_DEPENDENCIES = host-go host-nodejs host-python3
 
@@ -13,6 +14,9 @@ ifeq ($(BR2_PACKAGE_MAIX_CDK),y)
 # Use MaixCDK to build kvm_system.
 NANOKVM_SERVER_DEPENDENCIES += maix-cdk
 endif
+
+NANOKVM_SERVER_TOOLCHAIN_ARCH := $(BR2_ARCH)
+NANOKVM_SERVER_TOOLCHAIN_LIBC := $(findstring musl,$(realpath $(TOOLCHAIN_EXTERNAL_BIN)))
 
 GO_BIN = $(HOST_DIR)/bin/go
 
@@ -92,6 +96,11 @@ define NANOKVM_SERVER_BUILD_CMDS
 		rm -f $(@D)/kvmapp/jpg_stream/jpg_stream ; \
 		rm -rf $(@D)/kvmapp/kvm_system/ ; \
 		rm -rf $(@D)/kvmapp/system/ko/ ; \
+	fi
+	if [ "X$(NANOKVM_SERVER_TOOLCHAIN_LIBC)" != "Xmusl" ]; then \
+		sed -i 's|https://cdn.sipeed.com/nanokvm|$(NANOKVM_SERVER_UPDATE_URL)/glibc_'$(NANOKVM_SERVER_TOOLCHAIN_ARCH)'|g' $(@D)/$(NANOKVM_SERVER_GOMOD)/service/application/service.go ; \
+	else \
+		sed -i 's|https://cdn.sipeed.com/nanokvm|$(NANOKVM_SERVER_UPDATE_URL)/musl_'$(NANOKVM_SERVER_TOOLCHAIN_ARCH)'|g' $(@D)/$(NANOKVM_SERVER_GOMOD)/service/application/service.go ; \
 	fi
 	mkdir -pv $(@D)/$(NANOKVM_SERVER_GOMOD)/dl_lib/
 	rm -f $(@D)/$(NANOKVM_SERVER_GOMOD)/dl_lib/libopencv_*.so*
