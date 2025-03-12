@@ -9,8 +9,12 @@ NANOKVM_SG200X_SUBLEVEL =
 NANOKVM_SG200X_BASE = nanokvm-skeleton-$(NANOKVM_SG200X_VERSION)$(NANOKVM_SG200X_SUBLEVEL)
 NANOKVM_SG200X_SOURCE = v$(NANOKVM_SG200X_VERSION)$(NANOKVM_SG200X_SUBLEVEL).zip
 NANOKVM_SG200X_SITE = https://github.com/scpcom/nanokvm-skeleton/archive/refs/tags
+NANOKVM_SG200X_UPDATE_URL = https://scpcom.github.io/nanokvm
 
 NANOKVM_SG200X_DEPENDENCIES += nanokvm-server
+
+NANOKVM_SG200X_TOOLCHAIN_ARCH := $(BR2_ARCH)
+NANOKVM_SG200X_TOOLCHAIN_LIBC := $(findstring musl,$(realpath $(TOOLCHAIN_EXTERNAL_BIN)))
 
 NANOKVM_SG200X_EXT_MIDDLEWARE = $(realpath $(TOPDIR)/../middleware)
 NANOKVM_SG200X_EXT_KVM_SYSTEM = sample/kvm_system/kvm_system
@@ -61,6 +65,11 @@ endef
 
 define NANOKVM_SG200X_INSTALL_TARGET_CMDS
 	rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(NANOKVM_SG200X_PKGDIR)/overlay/ $(TARGET_DIR)/
+	if [ "X$(NANOKVM_SG200X_TOOLCHAIN_LIBC)" != "Xmusl" ]; then \
+		sed -i 's|https://cdn.sipeed.com/nanokvm|$(NANOKVM_SG200X_UPDATE_URL)/glibc_'$(NANOKVM_SG200X_TOOLCHAIN_ARCH)'|g' $(@D)/kvmapp/system/update-nanokvm.py ; \
+	else \
+		sed -i 's|https://cdn.sipeed.com/nanokvm|$(NANOKVM_SG200X_UPDATE_URL)/musl_'$(NANOKVM_SG200X_TOOLCHAIN_ARCH)'|g' $(@D)/kvmapp/system/update-nanokvm.py ; \
+	fi
 	if [ -e $(TARGET_DIR)/kvmapp/kvm_system/kvm_system ]; then \
 		rm -f ${@D}/kvmapp/kvm_system/kvm_system ; \
 		touch ${@D}/.maixcdk_kvm_system ; \
