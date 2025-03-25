@@ -1,0 +1,16 @@
+diff --git a/gdb/riscv-linux-nat.c b/gdb/riscv-linux-nat.c
+index 8be4a5a..a0cb299 100644
+--- a/gdb/riscv-linux-nat.c
++++ b/gdb/riscv-linux-nat.c
+@@ -34,6 +34,11 @@
+ # define NFPREG 33
+ #endif
+ 
++/* fix for old version musl libc */
++#ifndef ELF_NFPREG
++# define ELF_NFPREG NFPREG
++#endif
++
+ /* RISC-V Linux native additions to the default linux support.  */
+ 
+ class riscv_linux_nat_target final : public linux_nat_target
