@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-BUSYBOX_VERSION = 1.36.1
+BUSYBOX_VERSION = 1.37.0
 BUSYBOX_SITE = https://www.busybox.net/downloads
 BUSYBOX_SOURCE = busybox-$(BUSYBOX_VERSION).tar.bz2
 BUSYBOX_LICENSE = GPL-2.0, bzip2-1.0.4
@@ -14,6 +14,16 @@ BUSYBOX_CPE_ID_VENDOR = busybox
 # 0003-libbb-sockaddr2str-ensure-only-printable-characters-.patch
 # 0004-nslookup-sanitize-all-printed-strings-with-printable.patch
 BUSYBOX_IGNORE_CVES += CVE-2022-28391
+
+# 0012-awk-fix-use-after-free-CVE-2023-42363.patch
+BUSYBOX_IGNORE_CVES += CVE-2023-42363
+
+# 0013-awk-fix-precedence-of-relative-to.patch
+# 0014-awk-fix-ternary-operator-and-precedence-of.patch
+BUSYBOX_IGNORE_CVES += CVE-2023-42364 CVE-2023-42365
+
+# 0015-awk.c-fix-CVE-2023-42366-bug-15874.patch
+BUSYBOX_IGNORE_CVES += CVE-2023-42366
 
 BUSYBOX_CFLAGS = \
 	$(TARGET_CFLAGS)
@@ -400,6 +410,13 @@ define BUSYBOX_INSTALL_ADD_TO_SHELLS
 endef
 BUSYBOX_TARGET_FINALIZE_HOOKS += BUSYBOX_INSTALL_ADD_TO_SHELLS
 
+ifeq ($(BR2_TOOLCHAIN_HEADERS_AT_LEAST_4_11),)
+# IFLA_CAN_TERMINATION was introduced in Linux 4.11
+define BUSYBOX_DISABLE_IP_LINK_CAN
+	$(call KCONFIG_DISABLE_OPT,CONFIG_FEATURE_IP_LINK_CAN)
+endef
+endif
+
 define BUSYBOX_KCONFIG_FIXUP_CMDS
 	$(BUSYBOX_MUSL_DISABLE_SHA_HWACCEL)
 	$(BUSYBOX_SET_MMU)
@@ -412,6 +429,8 @@ define BUSYBOX_KCONFIG_FIXUP_CMDS
 	$(BUSYBOX_SET_SELINUX)
 	$(BUSYBOX_SET_LESS_FLAGS)
 	$(BUSYBOX_SET_INDIVIDUAL_BINARIES)
+	$(BUSYBOX_DISABLE_IP_LINK_CAN)
+	$(PACKAGES_BUSYBOX_CONFIG_FIXUPS)
 endef
 
 define BUSYBOX_BUILD_CMDS
