@@ -1,0 +1,24 @@
+From a365cbdbe2fd5d6621c325ec80097d55af67e73f Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Fri, 28 Mar 2025 04:54:23 +0100
+Subject: [PATCH 3/4] vision: include libavcodec/bsf.h
+
+---
+ components/vision/port/maixcam/maix_video_mmf.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/components/vision/port/maixcam/maix_video_mmf.cpp b/components/vision/port/maixcam/maix_video_mmf.cpp
+index 89875c4..037f9e8 100644
+--- a/components/vision/port/maixcam/maix_video_mmf.cpp
++++ b/components/vision/port/maixcam/maix_video_mmf.cpp
+@@ -8,6 +8,7 @@
+ extern "C" {
+ #include <libavformat/avformat.h>
+ #include <libavcodec/avcodec.h>
++#include <libavcodec/bsf.h>
+ #include <libavutil/imgutils.h>
+ #include <libswscale/swscale.h>
+ #include <libavutil/opt.h>
+-- 
+2.34.1
+
