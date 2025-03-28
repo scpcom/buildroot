@@ -1,0 +1,25 @@
+From 9485e1059d4976af42b067de07182941e47cd25e Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Fri, 28 Mar 2025 04:59:07 +0100
+Subject: [PATCH 4/4] vision: replace av_mallocz_array with av_calloc
+
+---
+ components/vision/port/maixcam/maix_video_mmf.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/components/vision/port/maixcam/maix_video_mmf.cpp b/components/vision/port/maixcam/maix_video_mmf.cpp
+index 037f9e8..8599dcf 100644
+--- a/components/vision/port/maixcam/maix_video_mmf.cpp
++++ b/components/vision/port/maixcam/maix_video_mmf.cpp
+@@ -1385,7 +1385,7 @@ _exit:
+ 
+         if (!s->nb_streams)
+             return NULL;
+-        opts = (AVDictionary **)av_mallocz_array(s->nb_streams, sizeof(*opts));
++        opts = (AVDictionary **)av_calloc(s->nb_streams, sizeof(*opts));
+         if (!opts) {
+             av_log(NULL, AV_LOG_ERROR,
+                 "Could not alloc memory for stream options.\n");
+-- 
+2.34.1
+
