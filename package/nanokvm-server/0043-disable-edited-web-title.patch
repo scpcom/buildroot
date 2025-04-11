@@ -1,0 +1,55 @@
+From 3d9c6f502b1e462549f20b3186f9a1840d095af8 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Fri, 11 Apr 2025 23:44:39 +0200
+Subject: [PATCH] disable edited web title
+
+---
+ web/src/components/head.tsx                   | 24 +------
+ 10 files changed, 7 insertions(+), 195 deletions(-)
+
+diff --git a/web/src/components/head.tsx b/web/src/components/head.tsx
+index 65304e8..bc7f4d5 100644
+--- a/web/src/components/head.tsx
++++ b/web/src/components/head.tsx
+@@ -1,7 +1,4 @@
+-import { useEffect, useState } from 'react';
+ import { Helmet, HelmetData } from 'react-helmet-async';
+-import * as api from '@/api/vm.ts';
+-
+ 
+ type HeadProps = {
+   title?: string;
+@@ -11,28 +8,11 @@ type HeadProps = {
+ const helmetData = new HelmetData({});
+ 
+ export const Head = ({ title = '', description = '' }: HeadProps = {}) => {
+-  const [webTitle, setWebTitle] = useState("");
+-
+-  useEffect(() => {
+-    api
+-      .getWebTitle()
+-      .then((rsp) => {
+-        if (rsp.data?.webTitle) {
+-          setWebTitle(rsp.data?.webTitle.toString());
+-        } else {
+-          setWebTitle("NanoKVM");
+-        }
+-      })
+-      
+-  }, []);
+-
+-
+-
+   return (
+     <Helmet
+       helmetData={helmetData}
+-      title={title ? `${title} - ${webTitle}` : undefined}
+-      defaultTitle={webTitle}
++      title={title ? `${title} - NanoKVM` : undefined}
++      defaultTitle="NanoKVM"
+     >
+       <meta name="description" content={description} />
+     </Helmet>
+-- 
+2.34.1
+
