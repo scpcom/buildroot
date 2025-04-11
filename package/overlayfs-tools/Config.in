@@ -1,0 +1,6 @@
+config BR2_PACKAGE_OVERLAYFS_TOOLS
+	bool "overlayfs-tools"
+	help
+	  OverlayFS tools
+
+	  https://github.com/kmxz/overlayfs-tools/
