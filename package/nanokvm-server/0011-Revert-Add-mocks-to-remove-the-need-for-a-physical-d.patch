@@ -347,59 +347,18 @@ diff --git a/web/src/main.tsx b/web/src/main.tsx
 index a3f4f9a..1501b4a 100644
 --- a/web/src/main.tsx
 +++ b/web/src/main.tsx
-@@ -11,33 +11,22 @@ import { router } from './router';
- import './i18n';
- import './assets/styles/index.css';
+@@ -43,11 +43,4 @@ const renderApp = () => {
+   );
+ };
  
--const renderApp = () => {
--  return ReactDOM.createRoot(document.getElementById('root')!).render(
--    <React.StrictMode>
--      <Suspense
--        fallback={
--          <div className="flex h-screen w-screen items-center justify-center">
--            <Spin size="large" />
--          </div>
--        }
--      >
--        <ErrorBoundary FallbackComponent={MainError}>
--          <HelmetProvider>
--            <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
--              <RouterProvider router={router} />
--            </ConfigProvider>
--          </HelmetProvider>
--        </ErrorBoundary>
--      </Suspense>
--    </React.StrictMode>
--  );
--};
--
 -if (import.meta.env.MODE === 'mocked') {
--  const { worker } = await import('./mocks/browser')
+-  const { worker } = await import('./mocks/browser');
 -  worker.start().then(() => {
 -    return renderApp();
 -  });
 -}
 -
--renderApp();
-+ReactDOM.createRoot(document.getElementById('root')!).render(
-+  <React.StrictMode>
-+    <Suspense
-+      fallback={
-+        <div className="flex h-screen w-screen items-center justify-center">
-+          <Spin size="large" />
-+        </div>
-+      }
-+    >
-+      <ErrorBoundary FallbackComponent={MainError}>
-+        <HelmetProvider>
-+          <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
-+            <RouterProvider router={router} />
-+          </ConfigProvider>
-+        </HelmetProvider>
-+      </ErrorBoundary>
-+    </Suspense>
-+  </React.StrictMode>
-+);
+ renderApp();
 diff --git a/web/src/mocks/browser.ts b/web/src/mocks/browser.ts
 deleted file mode 100644
 index 3cb0487..0000000
