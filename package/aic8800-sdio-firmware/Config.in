@@ -2,3 +2,12 @@ config BR2_PACKAGE_AIC8800_SDIO_FIRMWARE
 	bool "aic8800-sdio-firmware"
 	help
 	  aic8800 sdio wifi mcu firmware
+
+if BR2_PACKAGE_AIC8800_SDIO_FIRMWARE
+
+config BR2_PACKAGE_AIC8800_SDIO_FIRMWARE_D80
+	bool "aic8800-sdio-firmware-D80"
+	help
+	  aic8800 sdio wifi mcu firmware-D80
+
+endif
