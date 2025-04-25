@@ -1,0 +1,68 @@
+--- a/exp_tty.h	2018-02-02 19:15:52.000000000 +0000
++++ a/exp_tty.h	2025-04-25 02:19:58.738004474 +0000
+@@ -18,6 +18,7 @@
+ void exp_tty_raw(int set);
+ void exp_tty_echo(int set);
+ void exp_tty_break(Tcl_Interp *interp, int fd);
++int exp_tty_cooked_echo(Tcl_Interp *interp, exp_tty *tty_old, int *was_raw, int *was_echo);
+ int exp_tty_raw_noecho(Tcl_Interp *interp, exp_tty *tty_old, int *was_raw, int *was_echo);
+ int exp_israw(void);
+ int exp_isecho(void);
+--- a/exp_clib.c	2018-02-02 19:15:52.000000000 +0000
++++ a/exp_clib.c	2025-04-25 02:32:19.391288550 +0000
+@@ -8,6 +8,7 @@
+ */
+ 
+ #include "expect_cf.h"
++#include "exp_command.h"
+ #include <stdio.h>
+ #include <setjmp.h>
+ #ifdef HAVE_INTTYPES_H
+--- a/exp_chan.c	2018-02-02 19:15:52.000000000 +0000
++++ a/exp_chan.c	2025-04-25 03:00:15.090247709 +0000
+@@ -35,6 +35,7 @@
+ #include "exp_prog.h"
+ #include "exp_command.h"
+ #include "exp_log.h"
++#include "exp_event.h"
+ #include "tcldbg.h" /* Dbg_StdinMode */
+ 
+ extern int		expSetBlockModeProc _ANSI_ARGS_((int fd, int mode));
+@@ -58,7 +59,7 @@
+ 
+ Tcl_ChannelType expChannelType = {
+     "exp",				/* Type name. */
+-    ExpBlockModeProc,			/* Set blocking/nonblocking mode.*/
++    TCL_CHANNEL_VERSION_1,		/* Version.*/
+     ExpCloseProc,			/* Close proc. */
+     ExpInputProc,			/* Input proc. */
+     ExpOutputProc,			/* Output proc. */
+@@ -68,6 +69,7 @@
+     ExpWatchProc,			/* Initialize notifier. */
+     ExpGetHandleProc,			/* Get OS handles out of channel. */
+     NULL,				/* Close2 proc */
++    ExpBlockModeProc,			/* Set blocking/nonblocking mode.*/
+ };
+ 
+ typedef struct ThreadSpecificData {
+--- a/pty_termios.c	2018-02-02 19:15:52.000000000 +0000
++++ a/pty_termios.c	2025-04-25 03:09:28.042734441 +0000
+@@ -73,6 +73,10 @@
+ #include <string.h>
+ #endif
+ 
++#if defined(HAVE_OPENPTY)
++#include <pty.h>
++#endif
++
+ #ifdef HAVE_SYSMACROS_H
+ #include <sys/sysmacros.h>
+ #endif
+@@ -102,6 +106,7 @@
+ #include "exp_tty_in.h"
+ #include "exp_rename.h"
+ #include "exp_pty.h"
++#include "exp_int.h"
+ 
+ void expDiagLog();
+ void expDiagLogPtr();
