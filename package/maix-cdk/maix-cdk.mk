@@ -124,10 +124,14 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		[ -e $(TARGET_DIR)/usr/lib/libavresample.so ] || sed -i /libavresample.so/d $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		sed -i 's|                            $${src_path}/lib/libswscale.so|                            $${src_path}/lib/libswscale.so\n                            $${src_path}/lib/liblzma.so\n                            $${src_path}/lib/libxml2.so\n                            $${src_path}/lib/libz.so\n                            $${src_path}/lib/libbz2.so\n                            $${src_path}/lib/libssl.so\n                            $${src_path}/lib/libcrypto.so|g' $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		sed -i s/'# list.APPEND ADD_REQUIREMENTS.$$'/'list(APPEND ADD_REQUIREMENTS alsa_lib)'/g $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
+		rm -f $(@D)/components/3rd_party/FFmpeg/component.py ; \
+		sed -i s/'CONFIG_COMPONENTS_COMPILE_FROM_SOURCE'/'1'/g $(@D)/components/3rd_party/harfbuzz/CMakeLists.txt ; \
+		rm -f $(@D)/components/3rd_party/harfbuzz/component.py ; \
 		sed -i s/'default n'/'default y'/g $(@D)/components/3rd_party/opencv/Kconfig ; \
 		sed -i s/'# list.APPEND ADD_REQUIREMENTS pthread dl atomic.$$'/'list(APPEND ADD_REQUIREMENTS pthread dl atomic)'/g $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i s/'version_str "$(MAIX_CDK_OPENCV_VER)"'/'version_str "$(OPENCV4_VERSION)"'/g $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i s/'so_suffix_number "4.."'/'so_suffix_number "$(OPENCV4_SUFFIX)"'/g $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
+		rm -f $(@D)/components/3rd_party/opencv/component.py ; \
 		mkdir -pv $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(@D)/../harfbuzz-$(HARFBUZZ_VERSION)/ $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
 		mkdir -pv $(@D)/dl/extracted/opencv/opencv4/opencv-$(OPENCV4_VERSION)/ ; \
