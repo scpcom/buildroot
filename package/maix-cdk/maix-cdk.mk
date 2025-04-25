@@ -7,6 +7,9 @@
 MAIX_CDK_VERSION = da86eddb2c9551faa0cfd248447c53072e35555e
 MAIX_CDK_SITE = $(call github,sipeed,MaixCDK,$(MAIX_CDK_VERSION))
 
+MAIX_CDK_DL_PKGS_REF = 1c60539477058af78a0d00cf6ad112cd57bbbe31
+MAIX_CDK_DL_PKGS_URL = https://github.com/scpcom/maixcdk-dl-pkgs
+
 MAIX_CDK_SAMPLE = rtsp_demo
 
 MAIX_CDK_DEPENDENCIES =\
@@ -49,6 +52,9 @@ MAIX_CDK_MIDDLEWARE = components/3rd_party/sophgo-middleware/sophgo-middleware
 MAIX_CDK_MAIXCAM_DIST = examples/$(MAIX_CDK_SAMPLE)/dist/$(MAIX_CDK_SAMPLE)_release
 
 define MAIX_CDK_POST_EXTRACT_FIXUP
+	mkdir -pv $(@D)/dl
+	cd $(@D)/dl && git clone --depth 1 $(MAIX_CDK_DL_PKGS_URL) pkgs
+	cd $(@D)/dl/pkgs && git checkout $(MAIX_CDK_DL_PKGS_REF)
 	mv $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2 $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2-cdk
 	mkdir $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2
 	if [ -e $(MAIX_CDK_EXT_MIDDLEWARE)/Makefile -a ! -e $(MAIX_CDK_EXT_MIDDLEWARE)/v2/Makefile ]; then \
