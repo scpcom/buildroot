@@ -40,6 +40,12 @@ endif
 MAIX_CDK_TOOLCHAIN_ARCH := $(BR2_ARCH)
 MAIX_CDK_TOOLCHAIN_LIBC := $(findstring musl,$(realpath $(MAIX_CDK_TOOLCHAIN_BIN)))
 
+ifeq ($(findstring CV180X,$(TARGET_DIR)),CV180X)
+MAIX_CDK_TOOLCHAIN_CHIP := CV180X
+else
+MAIX_CDK_TOOLCHAIN_CHIP := CV181X
+endif
+
 MAIX_CDK_HARFBUZZ_VER = 8.2.1
 MAIX_CDK_OPENCV_VER = 4.9.0
 
@@ -110,8 +116,8 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		sed -i 's|$${mmf_lib_dir}/libvi.so|\$${mmf_lib_dir}/libvi.so $${mmf_lib_dir}/libvo.so $${mmf_lib_dir}/libvpss.so $${mmf_lib_dir}/librgn.so|g' $(@D)/components/maixcam_lib/CMakeLists.txt ; \
 	fi
 	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/uapi/linux/cvi_cv181x_defines.h ]; then \
-		sed -i 's|^list.APPEND ADD_INCLUDE $${middleware_include_dir}.|list(APPEND ADD_INCLUDE $${middleware_include_dir})\n\nlist(APPEND ADD_DEFINITIONS -D__CV181X__)|g' $(@D)/components/3rd_party/sophgo-middleware/CMakeLists.txt ; \
-		sed -i 's|^list.APPEND ADD_INCLUDE "include".|list(APPEND ADD_INCLUDE "include")\n\nlist(APPEND ADD_DEFINITIONS -D__CV181X__)|g' $(@D)/components/maixcam_lib/CMakeLists.txt ; \
+		sed -i 's|^list.APPEND ADD_INCLUDE $${middleware_include_dir}.|list(APPEND ADD_INCLUDE $${middleware_include_dir})\n\nlist(APPEND ADD_DEFINITIONS -D__$(MAIX_CDK_TOOLCHAIN_CHIP)__)|g' $(@D)/components/3rd_party/sophgo-middleware/CMakeLists.txt ; \
+		sed -i 's|^list.APPEND ADD_INCLUDE "include".|list(APPEND ADD_INCLUDE "include")\n\nlist(APPEND ADD_DEFINITIONS -D__$(MAIX_CDK_TOOLCHAIN_CHIP)__)|g' $(@D)/components/maixcam_lib/CMakeLists.txt ; \
 	fi
 	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/component/isp/common/sensor_list.h ]; then \
 		sed -i 's|^    $${middleware_src_path}/v2/component/panel/sg200x|    $${middleware_src_path}/v2/component/isp/common\n    $${middleware_src_path}/v2/component/panel/sg200x|g' $(@D)/components/3rd_party/sophgo-middleware/CMakeLists.txt ; \
