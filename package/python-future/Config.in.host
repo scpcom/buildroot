@@ -1,0 +1,6 @@
+config BR2_PACKAGE_HOST_PYTHON_FUTURE
+	bool "host python-future"
+	help
+	  Easy, clean, reliable Python 2/3 compatibility.
+
+	  http://python-future.org
