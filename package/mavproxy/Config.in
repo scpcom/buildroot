@@ -1,0 +1,8 @@
+config BR2_PACKAGE_MAVPROXY
+	bool "Mavproxy"
+	depends on BR2_PACKAGE_PYTHON3
+	
+	help
+	  This is a MAVLink ground station written in python.
+
+	  
