@@ -1,8 +1,6 @@
 config BR2_PACKAGE_MAVLINK
 	bool "mavlink"
 	help
-	  yaml-cpp is a YAML parser and emitter in C++ matching
-	  the YAML 1.2 spec.
+	  MAVLink micro air vehicle marshalling / communication library.
 
-	  https://github.com/jbeder/yaml-cpp
-
+	  https://mavlink.io/

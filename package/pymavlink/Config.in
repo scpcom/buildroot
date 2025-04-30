@@ -1,8 +1,7 @@
 config BR2_PACKAGE_PYMAVLINK
 	bool "Pymavlink"
 	depends on BR2_PACKAGE_PYTHON3
-	
 	help
-	  
+	  python MAVLink interface and utilities.
 
-	  
+	  https://ardupilot.org/dev/docs/mavlink-commands.html
