@@ -1,6 +1,10 @@
 config BR2_PACKAGE_PYMAVLINK
 	bool "Pymavlink"
+	depends on BR2_PACKAGE_LIBXML2
+	depends on BR2_PACKAGE_MAVLINK
 	depends on BR2_PACKAGE_PYTHON3
+	depends on BR2_PACKAGE_PYTHON_FUTURE
+	depends on BR2_PACKAGE_PYTHON_LXML
 	help
 	  python MAVLink interface and utilities.
 
