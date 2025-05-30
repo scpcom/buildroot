@@ -4,17 +4,18 @@
 #
 ################################################################################
 
-MAVLINK_VERSION = master
+MAVLINK_VERSION = 3309f7658bddb0f8d048715f7b41a8a1676e575c
 #MAVLINK_SITE = $(call github,ArduPilot,mavlink,$(MAVLINK_VERSION))
 MAVLINK_SITE = git@github.com:ArduPilot/mavlink.git
 MAVLINK_SITE_METHOD = git
-#MAVLINK_INSTALL_STAGING = YES
+
 MAVLINK_LICENSE = MIT
 MAVLINK_LICENSE_FILES = LICENSE
 
 MAVLINK_GIT_SUBMODULES = YES
 
-MAVLINK_DEPENDENCIES += host-pkgconf python3 libxml2 python-future python-lxml host-python-lxml host-python-future
+MAVLINK_DEPENDENCIES += host-pkgconf python3 libxml2 python-future \
+						python-lxml host-python-lxml host-python-future  host-python-cython
 MAVLINK_SUPPORTS_IN_SOURCE_BUILD=NO
 MAVLINK_INSTALL_STAGING = YES
 
