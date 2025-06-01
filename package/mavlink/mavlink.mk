@@ -5,8 +5,8 @@
 ################################################################################
 
 MAVLINK_VERSION = 3309f7658bddb0f8d048715f7b41a8a1676e575c
-#MAVLINK_SITE = $(call github,ArduPilot,mavlink,$(MAVLINK_VERSION))
-MAVLINK_SITE = git@github.com:ArduPilot/mavlink.git
+#MAVLINK_SITE = git@github.com:ArduPilot/mavlink.git
+MAVLINK_SITE = https://github.com/ArduPilot/mavlink.git
 MAVLINK_SITE_METHOD = git
 
 MAVLINK_LICENSE = MIT
