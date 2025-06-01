@@ -2956,6 +2956,7 @@ menu "Fly software"
 	source "package/mavproxy/Config.in"
 	source "package/mavlink/Config.in"
 	source "package/pymavlink/Config.in"
+	source "package/mavlink-router/Config.in"
 endmenu
 
 endmenu

@@ -1,9 +1,9 @@
 config BR2_PACKAGE_MAVLINK
 	bool "mavlink"
-	depends on BR2_PACKAGE_LIBXML2
-	depends on BR2_PACKAGE_PYTHON3
-	depends on BR2_PACKAGE_PYTHON_FUTURE
-	depends on BR2_PACKAGE_PYTHON_LXML
+	select BR2_PACKAGE_LIBXML2
+	select BR2_PACKAGE_PYTHON3
+	select BR2_PACKAGE_PYTHON_FUTURE
+	select BR2_PACKAGE_PYTHON_LXML
 	help
 	  MAVLink micro air vehicle marshalling / communication library.
 
