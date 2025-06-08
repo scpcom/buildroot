@@ -24,7 +24,9 @@ MAIX_CDK_DEPENDENCIES +=\
 	alsa-lib \
 	ffmpeg \
 	harfbuzz \
-	opencv4
+	libxml2 \
+	opencv4 \
+	xz
 endif
 
 ifeq ($(BR2_TOOLCHAIN_BUILDROOT),y)
