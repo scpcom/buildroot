@@ -56,6 +56,8 @@ MAIX_CDK_EXT_MAIXCAM_LIB = sample/test_mmf/maixcam_lib/release.linux/libmaixcam_
 MAIX_CDK_EXT_OSDRV = $(realpath $(TOPDIR)/../osdrv)
 
 MAIX_CDK_MIDDLEWARE = components/3rd_party/sophgo-middleware/sophgo-middleware
+MAIX_CDK_MIDDLEWARE_SRC=$(shell [ -e $(MAIX_CDK_EXT_MIDDLEWARE)/Makefile -a ! -e $(MAIX_CDK_EXT_MIDDLEWARE)/v2/Makefile ] && echo "$(MAIX_CDK_EXT_MIDDLEWARE)" || echo "$(MAIX_CDK_EXT_MIDDLEWARE)/v2")
+MAIX_CDK_MIDDLEWARE_SUBDIRS = 3rdparty/inih component include lib modules/ive/include pkgconfig sample/common sample/test_mmf/maixcam_lib/release.linux
 
 MAIX_CDK_MAIXCAM_DIST = examples/$(MAIX_CDK_SAMPLE)/dist/$(MAIX_CDK_SAMPLE)_release
 
@@ -65,11 +67,10 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 	cd $(@D)/dl/pkgs && git checkout $(MAIX_CDK_DL_PKGS_REF)
 	mv $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2 $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2-cdk
 	mkdir $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2
-	if [ -e $(MAIX_CDK_EXT_MIDDLEWARE)/Makefile -a ! -e $(MAIX_CDK_EXT_MIDDLEWARE)/v2/Makefile ]; then \
-		rsync -r --verbose --exclude=mod_tmp --copy-dirlinks --copy-links --hard-links $(MAIX_CDK_EXT_MIDDLEWARE)/ $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/ ; \
-	else \
-		rsync -r --verbose --exclude=mod_tmp --copy-dirlinks --copy-links --hard-links $(MAIX_CDK_EXT_MIDDLEWARE)/v2/ $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/ ; \
-	fi
+	for d in $(MAIX_CDK_MIDDLEWARE_SUBDIRS) ; do \
+		mkdir -p $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$$d ; \
+		rsync -r --verbose --exclude=mod_tmp --copy-dirlinks --copy-links --hard-links $(MAIX_CDK_MIDDLEWARE_SRC)/$$d/ $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$$d/ ; \
+	done
 	mkdir $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/uapi
 	if [ -e $(MAIX_CDK_EXT_OSDRV)/interdrv/include -a ! -e $(MAIX_CDK_EXT_OSDRV)/interdrv/v2/include ]; then \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(MAIX_CDK_EXT_OSDRV)/interdrv/include/common/uapi/ $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/uapi/ ; \
@@ -79,9 +80,6 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(MAIX_CDK_EXT_OSDRV)/interdrv/v2/include/chip/mars/uapi/ $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/uapi/ ; \
 	fi
 	rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2-cdk/sample/vio/ $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/sample/vio/
-	sed -i s/' dummy isp_light '/' '/g $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/modules/Makefile
-	rm -rf $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/modules/dummy/
-	rm -rf $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/modules/isp_light/
 	if grep -q stSnsGc02m1_Obj $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/sample/common/sample_common_sensor.c ; then \
 		if ! grep -q stSnsGc02m1_Obj $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/include/cvi_sns_ctrl.h ; then \
 			sed -i s/stSnsGc02m1b_Obj/stSnsGc02m1_Obj/g $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/include/cvi_sns_ctrl.h ; \
@@ -147,9 +145,9 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		sed -i s/'so_suffix_number "4.."'/'so_suffix_number "$(OPENCV4_SUFFIX)"'/g $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		rm -f $(@D)/components/3rd_party/opencv/component.py ; \
 		mkdir -pv $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
-		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(@D)/../harfbuzz-$(HARFBUZZ_VERSION)/ $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
+		rsync -r --verbose --copy-dirlinks --copy-links --hard-links --exclude=build --exclude=test $(@D)/../harfbuzz-$(HARFBUZZ_VERSION)/ $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
 		mkdir -pv $(@D)/dl/extracted/opencv/opencv4/opencv-$(OPENCV4_VERSION)/ ; \
-		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(@D)/../opencv4-$(OPENCV4_VERSION)/ $(@D)/dl/extracted/opencv/opencv4/opencv-$(OPENCV4_VERSION)/ ; \
+		rsync -r --verbose --copy-dirlinks --copy-links --hard-links --exclude=buildroot-build $(@D)/../opencv4-$(OPENCV4_VERSION)/ $(@D)/dl/extracted/opencv/opencv4/opencv-$(OPENCV4_VERSION)/ ; \
 		sed -i /'list.APPEND ADD_REQUIREMENTS cvi_tpu.'/d $(@D)/components/maixcam_lib/CMakeLists.txt ; \
 	fi
 endef
