@@ -139,15 +139,16 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		rm -f $(@D)/components/3rd_party/FFmpeg/component.py ; \
 		sed -i s/'CONFIG_COMPONENTS_COMPILE_FROM_SOURCE'/'1'/g $(@D)/components/3rd_party/harfbuzz/CMakeLists.txt ; \
 		rm -f $(@D)/components/3rd_party/harfbuzz/component.py ; \
-		sed -i s/'default n'/'default y'/g $(@D)/components/3rd_party/opencv/Kconfig ; \
+		sed -i 's|EXISTS "$${CMAKE_CURRENT_LIST_DIR}/opencv4_lib_maixcam"|EXISTS "$(TARGET_DIR)/usr"|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
+		sed -i 's|opencv_lib_dir "$${CMAKE_CURRENT_LIST_DIR}/opencv4_lib_maixcam"|opencv_lib_dir "$(TARGET_DIR)/usr"|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
+		sed -i 's|$${opencv_lib_dir}/dl_lib|$${opencv_lib_dir}/lib|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
+		sed -i s/'list.APPEND ADD_REQUIREMENTS pthread dl.$$'/'list(APPEND ADD_REQUIREMENTS pthread dl atomic)'/g $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i s/'# list.APPEND ADD_REQUIREMENTS pthread dl atomic.$$'/'list(APPEND ADD_REQUIREMENTS pthread dl atomic)'/g $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i s/'version_str "$(MAIX_CDK_OPENCV_VER)"'/'version_str "$(OPENCV4_VERSION)"'/g $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i s/'so_suffix_number "4.."'/'so_suffix_number "$(OPENCV4_SUFFIX)"'/g $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		rm -f $(@D)/components/3rd_party/opencv/component.py ; \
 		mkdir -pv $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links --exclude=build --exclude=test $(@D)/../harfbuzz-$(HARFBUZZ_VERSION)/ $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
-		mkdir -pv $(@D)/dl/extracted/opencv/opencv4/opencv-$(OPENCV4_VERSION)/ ; \
-		rsync -r --verbose --copy-dirlinks --copy-links --hard-links --exclude=buildroot-build $(@D)/../opencv4-$(OPENCV4_VERSION)/ $(@D)/dl/extracted/opencv/opencv4/opencv-$(OPENCV4_VERSION)/ ; \
 		sed -i /'list.APPEND ADD_REQUIREMENTS cvi_tpu.'/d $(@D)/components/maixcam_lib/CMakeLists.txt ; \
 	fi
 endef
@@ -166,6 +167,16 @@ define MAIX_CDK_BUILD_CMDS
 	sed -i 's|COMMAND python3 |COMMAND '$(HOST_DIR)/bin/python3' |g' $(@D)/tools/cmake/*.cmake
 	sed -i 's|set.$${python} python3 |set($${python} '$(HOST_DIR)/bin/python3' |g' $(@D)/tools/cmake/*.cmake
 	[ "X$(BR2_TOOLCHAIN_BUILDROOT)" != "Xy" ] || sed -i /'^    $${strip_cmd}'/d $(@D)/tools/cmake/gen_binary.cmake
+	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES)" = "Xy" -a "$(MAIX_CDK_OPENCV_VER)-$(MAIX_CDK_TOOLCHAIN_ARCH)-$(MAIX_CDK_TOOLCHAIN_LIBC)" != "$(OPENCV4_VERSION)-riscv64-musl" ]; then \
+		for j in libtbb libjpeg libsharpyuv libwebp libpng16 libtiff ; do \
+		for k in $(TARGET_DIR)/usr/lib/$${j}.so.* ; do \
+			l=`basename $$k` ; \
+			[ -e $$k ] || continue ; \
+			echo $$l | cut -d '.' -f 3- | grep -q '\.' && continue ; \
+			sed -i 's|                                            "$${opencv_lib_dir}/lib/libopencv_video.so.$${so_suffix_number}"|                                            "$${opencv_lib_dir}/lib/libopencv_video.so.$${so_suffix_number}"\n                                            "$${opencv_lib_dir}/lib/'$$l'"|g' $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
+		done ; \
+		done ; \
+	fi
 	rm -rf $(@D)/components/3rd_party/ax620e_msp/
 	cd $(@D)/ ; \
 	$(HOST_DIR)/bin/python3 -m pip install -r requirements.txt
