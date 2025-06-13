@@ -11,7 +11,7 @@ then
 	then
 		panel_value=$(grep '^panel=' /boot/uEnv.txt | cut -d '=' -f 2)
 	fi
-	if [ "$panel_value" = "st7701_lct024bsi20" ]
+	if [ "$panel_value" = "st7701_lct024bsi20" -o "$panel_value" = "d240si31" ]
 	then
 		echo "load cst7xx touchscreen driver"
 		insmod /mnt/system/ko/hynitron_touch_new.ko
