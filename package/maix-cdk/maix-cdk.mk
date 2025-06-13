@@ -246,16 +246,20 @@ define MAIX_CDK_INSTALL_TARGET_CMDS
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/components/maixcam_lib/lib/libmaixcam_lib.so ${@D}/dist/maixapp/lib/ ; \
 	fi
 	if [ -e ${@D}/dist/maixapp ]; then \
-		mkdir -pv $(TARGET_DIR)/maixapp/tmp/ ; \
+		mkdir -pv $(TARGET_DIR)/maixapp/ ; \
 		rsync -r --verbose --links --safe-links --hard-links ${@D}/dist/maixapp/ $(TARGET_DIR)/maixapp/ ; \
 	elif [ -e  ${@D}/$(MAIX_CDK_MAIXCAM_DIST) ]; then \
 		mkdir -pv $(TARGET_DIR)/maixapp/lib/ ; \
-		mkdir -pv $(TARGET_DIR)/maixapp/tmp/ ; \
 		mkdir -pv $(TARGET_DIR)/maixapp/$(MAIX_CDK_SAMPLE)/ ; \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/$(MAIX_CDK_MAIXCAM_DIST)/ $(TARGET_DIR)/maixapp/$(MAIX_CDK_SAMPLE)/ ; \
 		rm -rf $(TARGET_DIR)/maixapp/$(MAIX_CDK_SAMPLE)/dl_lib ; \
 		ln -s ../lib $(TARGET_DIR)/maixapp/$(MAIX_CDK_SAMPLE)/dl_lib ; \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/$(MAIX_CDK_MAIXCAM_DIST)/dl_lib/ $(TARGET_DIR)/maixapp/lib/ ; \
+	fi
+	if [ -e $(TARGET_DIR)/maixapp ]; then \
+		mkdir -pv $(TARGET_DIR)/maixapp/share/picture/ ; \
+		mkdir -pv $(TARGET_DIR)/maixapp/share/video/ ; \
+		mkdir -pv $(TARGET_DIR)/maixapp/tmp/ ; \
 	fi
 endef
 
