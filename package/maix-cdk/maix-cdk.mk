@@ -30,11 +30,11 @@ MAIX_CDK_DEPENDENCIES +=\
 endif
 
 ifeq ($(BR2_TOOLCHAIN_BUILDROOT),y)
-MAIX_CDK_TOOLCHAIN_BIN := $(HOST_DIR)/bin
-MAIX_CDK_TOOLCHAIN_PREFIX := $(BR2_ARCH)-buildroot-linux-gnu
+#MAIX_CDK_TOOLCHAIN_BIN := $(HOST_DIR)/bin
+MAIX_CDK_TOOLCHAIN_PREFIX := $(BR2_ARCH)-buildroot-linux-gnu-
 else
 MAIX_CDK_TOOLCHAIN_BIN := $(TOOLCHAIN_EXTERNAL_BIN)
-MAIX_CDK_TOOLCHAIN_PREFIX := $(TOOLCHAIN_EXTERNAL_PREFIX)
+MAIX_CDK_TOOLCHAIN_PREFIX := $(TOOLCHAIN_EXTERNAL_PREFIX)-
 endif
 
 # maixcam pre-built binaries are only for riscv64
@@ -159,8 +159,12 @@ define MAIX_CDK_BUILD_CMDS
 	sed -i s/'^    sha256sum: .*'/'    sha256sum:'/g $(@D)/platforms/maixcam.yaml
 	sed -i s/'^    filename: .*'/'    filename:'/g $(@D)/platforms/maixcam.yaml
 	sed -i s/'^    path: .*'/'    path:'/g $(@D)/platforms/maixcam.yaml
-	sed -i 's|^    bin_path: .*|    bin_path: '$(realpath $(MAIX_CDK_TOOLCHAIN_BIN))'|g' $(@D)/platforms/maixcam.yaml ; \
-	sed -i 's|^    prefix: .*|    prefix: '$(MAIX_CDK_TOOLCHAIN_PREFIX)'-|g' $(@D)/platforms/maixcam.yaml
+	if [ "X$(MAIX_CDK_TOOLCHAIN_BIN)" = "X" ]; then \
+		sed -i 's|^    bin_path: .*|    bin_path: '$(HOST_DIR)/bin'|g' $(@D)/platforms/maixcam.yaml ; \
+	else \
+		sed -i 's|^    bin_path: .*|    bin_path: '$(realpath $(MAIX_CDK_TOOLCHAIN_BIN))'|g' $(@D)/platforms/maixcam.yaml ; \
+	fi
+	sed -i 's|^    prefix: .*|    prefix: '$(MAIX_CDK_TOOLCHAIN_PREFIX)'|g' $(@D)/platforms/maixcam.yaml
 	sed -i "s|^    c_flags: .*|    c_flags: $(TARGET_LDFLAGS)|g" $(@D)/platforms/maixcam.yaml
 	sed -i "s|^    cxx_flags: .*|    cxx_flags: $(TARGET_LDFLAGS)|g" $(@D)/platforms/maixcam.yaml
 	sed -i 's|COMMAND python |COMMAND '$(HOST_DIR)/bin/python3' |g' $(@D)/tools/cmake/*.cmake
