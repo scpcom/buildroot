@@ -158,10 +158,12 @@ define NANOKVM_SG200X_INSTALL_TARGET_CMDS
 	mkdir -pv $(TARGET_DIR)/etc/init.d/
 	rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(TARGET_DIR)/kvmapp/system/init.d/ $(TARGET_DIR)/etc/init.d/
 	rm -f $(TARGET_DIR)/etc/init.d/S03usbhid
+	rm -f $(TARGET_DIR)/etc/init.d/S03usbkeyboard
 	if [ -e $(NANOKVM_SG200X_EXT_OVERLAY)/etc/init.d ]; then \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(TARGET_DIR)/kvmapp/system/init.d/ $(NANOKVM_SG200X_EXT_OVERLAY)/etc/init.d/ ; \
 	fi
 	rm -f $(NANOKVM_SG200X_EXT_OVERLAY)/etc/init.d/S03usbhid
+	rm -f $(NANOKVM_SG200X_EXT_OVERLAY)/etc/init.d/S03usbkeyboard
 endef
 
 $(eval $(generic-package))
