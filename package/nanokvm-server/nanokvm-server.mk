@@ -172,6 +172,13 @@ define NANOKVM_SERVER_BUILD_CMDS
 		PATH=$(BR_PATH) $(HOST_DIR)/bin/maixcdk build -p maixcam ; \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(@D)/../maix-cdk-$(MAIX_CDK_VERSION)/examples/kvm_system/dist/kvm_system_release/kvm_system $(@D)/support/sg2002/kvm_system/ ; \
 	fi
+	if [ -e $(@D)/tools/nanokvm_update_edid ]; then \
+		cd $(@D)/tools/nanokvm_update_edid ; \
+		rm -f nanokvm_update_edid ; \
+		sed -i s/'^CROSS_COMPILE ='/'#CROSS_COMPILE ='/g Makefile ; \
+		sed -i s/'^CC ='/'#CC ='/g Makefile ; \
+		$(TARGET_MAKE_ENV) make CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS) $(TARGET_LDFLAGS)" ; \
+	fi
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
 	GOPROXY=direct GOSUMDB="sum.golang.org" $(GO_BIN) mod tidy
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
@@ -207,6 +214,11 @@ define NANOKVM_SERVER_INSTALL_TARGET_CMDS
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/support/sg2002/kvm_system/kvm_system $(TARGET_DIR)/kvmapp/kvm_system/ ; \
 	else \
 		rm -f $(TARGET_DIR)/kvmapp/kvm_system/kvm_system ; \
+	fi
+	if [ -e $(@D)/tools/nanokvm_update_edid ]; then \
+		mkdir -pv $(TARGET_DIR)/kvmapp/tools/ ; \
+		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/tools/nanokvm_update_edid/nanokvm_update_edid $(TARGET_DIR)/kvmapp/tools/ ; \
+		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/tools/nanokvm_update_edid/E21_NanoKVM.bin $(TARGET_DIR)/kvmapp/tools/ ; \
 	fi
 	mkdir -pv $(TARGET_DIR)/kvmapp/server/dl_lib/
 	rsync -r --verbose --links --safe-links --hard-links ${@D}/server/dl_lib/ $(TARGET_DIR)/kvmapp/server/dl_lib/
