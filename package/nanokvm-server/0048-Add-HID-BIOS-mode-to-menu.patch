@@ -1,0 +1,283 @@
+From a2f12c520697dfcf7f895a2148d4bff3bee3986e Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 12 Oct 2025 00:50:21 +0200
+Subject: [PATCH] Add HID BIOS mode to menu
+
+---
+ server/proto/hid.go                           |  8 ++
+ server/router/hid.go                          |  3 +
+ server/service/hid/bios.go                    | 52 +++++++++++++
+ web/src/api/hid.ts                            | 13 ++++
+ web/src/i18n/locales/de.ts                    |  1 +
+ web/src/i18n/locales/en.ts                    |  2 +
+ web/src/jotai/mouse.ts                        |  3 +
+ .../pages/desktop/menu/mouse/bios-mode.tsx    | 76 +++++++++++++++++++
+ web/src/pages/desktop/menu/mouse/index.tsx    |  2 +
+ 9 files changed, 160 insertions(+)
+ create mode 100644 server/service/hid/bios.go
+ create mode 100644 web/src/pages/desktop/menu/mouse/bios-mode.tsx
+
+diff --git a/server/proto/hid.go b/server/proto/hid.go
+index b7bca75..6ebdbb5 100644
+--- a/server/proto/hid.go
++++ b/server/proto/hid.go
+@@ -1,5 +1,13 @@
+ package proto
+ 
++type GetBiosModeRsp struct {
++	Mode string `json:"mode"` // normal or bios
++}
++
++type SetBiosModeReq struct {
++	Mode string `validate:"required"` // normal or bios
++}
++
+ type GetHidModeRsp struct {
+ 	Mode string `json:"mode"` // normal or hid-only
+ }
+diff --git a/server/router/hid.go b/server/router/hid.go
+index bba4a08..f281005 100644
+--- a/server/router/hid.go
++++ b/server/router/hid.go
+@@ -14,6 +14,9 @@ func hidRouter(r *gin.Engine) {
+ 	api.POST("/hid/reset", service.Reset) // reset hid
+ 	api.POST("/hid/paste", service.Paste) // paste
+ 
++	api.GET("/hid/bios", service.GetBiosMode)  // get hid bios mode
++	api.POST("/hid/bios", service.SetBiosMode) // set hid bios mode
++
+ 	api.GET("/hid/mode", service.GetHidMode)  // get hid mode
+ 	api.POST("/hid/mode", service.SetHidMode) // set hid mode
+ }
+diff --git a/server/service/hid/bios.go b/server/service/hid/bios.go
+new file mode 100644
+index 0000000..bba2780
+--- /dev/null
++++ b/server/service/hid/bios.go
+@@ -0,0 +1,52 @@
++package hid
++
++import (
++	"NanoKVM-Server/proto"
++
++	"github.com/gin-gonic/gin"
++	log "github.com/sirupsen/logrus"
++)
++
++func (s *Service) GetBiosMode(c *gin.Context) {
++	var rsp proto.Response
++
++	mode, err := getBiosMode()
++	if err != nil {
++		rsp.ErrRsp(c, -1, "get HID BIOS mode failed")
++		return
++	}
++
++	rsp.OkRspWithData(c, &proto.GetBiosModeRsp{
++		Mode: mode,
++	})
++	log.Debugf("get hid bios mode: %s", mode)
++}
++
++func (s *Service) SetBiosMode(c *gin.Context) {
++	var req proto.SetBiosModeReq
++	var rsp proto.Response
++
++	if err := proto.ParseFormRequest(c, &req); err != nil {
++		rsp.ErrRsp(c, -1, "invalid arguments")
++		return
++	}
++	if req.Mode != ModeNonBios && req.Mode != ModeHidBios {
++		rsp.ErrRsp(c, -2, "invalid arguments")
++		return
++	}
++
++	if mode, _ := getBiosMode(); req.Mode == mode {
++		rsp.OkRsp(c)
++		return
++	}
++
++	hidmode, _ := getHidMode()
++
++	msg, err := setHidMode(hidmode, req.Mode)
++	if err != nil {
++		rsp.ErrRsp(c, -2, msg)
++		return
++	}
++
++	rsp.OkRsp(c)
++}
+diff --git a/web/src/api/hid.ts b/web/src/api/hid.ts
+index c0f80d5..b64b55d 100644
+--- a/web/src/api/hid.ts
++++ b/web/src/api/hid.ts
+@@ -10,6 +10,19 @@ export function reset() {
+   return http.post('/api/hid/reset');
+ }
+ 
++// get bios mode
++export function getBiosMode() {
++  return http.get('/api/hid/bios');
++}
++
++// set bios mode
++export function setBiosMode(mode: string) {
++  const data = {
++    mode
++  };
++  return http.post('/api/hid/bios', data);
++}
++
+ // get hid mode
+ export function getHidMode() {
+   return http.get('/api/hid/mode');
+diff --git a/web/src/i18n/locales/de.ts b/web/src/i18n/locales/de.ts
+index 0888003..4f46ffb 100644
+--- a/web/src/i18n/locales/de.ts
++++ b/web/src/i18n/locales/de.ts
+@@ -88,6 +88,7 @@ const de = {
+       relative: 'Relativer Modus',
+       requestPointer: 'Relativer Modus aktiv. Klicken Sie auf den Desktop um den Mauszeiger zu sehen.',
+       resetHid: 'HID zurücksetzen',
++      biosHid: 'HID BIOS-Modus',
+       hidOnly: {
+         title: 'HID-Only Modus',
+         desc: 'Wenn Ihre Maus und Tastatur nicht mehr reagieren und das Zurücksetzen der HID-Verbindung nicht hilft, könnte es sich um ein Kompatibilitätsproblem zwischen dem NanoKVM und dem Gerät handeln. Versuchen Sie, den HID-Only Modus zu aktivieren, um die Kompatibilität zu verbessern.',
+diff --git a/web/src/i18n/locales/en.ts b/web/src/i18n/locales/en.ts
+index 534d4f0..fe0cec3 100644
+--- a/web/src/i18n/locales/en.ts
++++ b/web/src/i18n/locales/en.ts
+@@ -92,6 +92,7 @@ const en = {
+       slow: 'Slow',
+       requestPointer: 'Using relative mode. Please click desktop to get mouse pointer.',
+       resetHid: 'Reset HID',
++      biosHid: 'HID BIOS mode',
+       hidOnly: {
+         title: 'HID-Only mode',
+         desc: "If your mouse and keyboard stop responding and resetting HID doesn't help, it could be a compatibility issue between the NanoKVM and the device. Try to enable HID-Only mode for better compatibility.",
+@@ -264,6 +265,7 @@ const en = {
+         hdmi: {
+           description: 'Enable HDMI/monitor output'
+         },
++        hidBIOS: 'HID BIOS Mode',
+         hidOnly: 'HID-Only Mode',
+         disk: 'Virtual Disk',
+         diskDesc: 'Mount virtual U-disk on the remote host',
+diff --git a/web/src/jotai/mouse.ts b/web/src/jotai/mouse.ts
+index 691f03e..ef47798 100644
+--- a/web/src/jotai/mouse.ts
++++ b/web/src/jotai/mouse.ts
+@@ -9,5 +9,8 @@ export const mouseModeAtom = atom('absolute');
+ // mouse scroll interval (unit: ms)
+ export const scrollIntervalAtom = atom(0);
+ 
++// hid bios mode: normal or bios
++export const biosModeAtom = atom<'normal' | 'bios'>('normal');
++
+ // hid mode: normal or hid-only
+ export const hidModeAtom = atom<'normal' | 'hid-only'>('normal');
+diff --git a/web/src/pages/desktop/menu/mouse/bios-mode.tsx b/web/src/pages/desktop/menu/mouse/bios-mode.tsx
+new file mode 100644
+index 0000000..a1c164d
+--- /dev/null
++++ b/web/src/pages/desktop/menu/mouse/bios-mode.tsx
+@@ -0,0 +1,76 @@
++import { useEffect, useState } from 'react';
++import clsx from 'clsx';
++import { useAtom } from 'jotai';
++import { MonitorCog } from 'lucide-react';
++import { useTranslation } from 'react-i18next';
++
++import * as api from '@/api/hid.ts';
++import { biosModeAtom } from '@/jotai/mouse.ts';
++
++export const BiosMode = () => {
++  const { t } = useTranslation();
++  const [biosMode, setBiosMode] = useAtom(biosModeAtom);
++
++  const [isLoading, setIsLoading] = useState(false);
++
++  useEffect(() => {
++    getBiosMode();
++  }, []);
++
++  function getBiosMode() {
++    setIsLoading(true);
++
++    api
++      .getBiosMode()
++      .then((rsp) => {
++        if (rsp.code !== 0) {
++          return;
++        }
++
++        setBiosMode(rsp.data.mode);
++      })
++      .finally(() => {
++        setIsLoading(false);
++      });
++  }
++
++  function updateBiosMode() {
++    if (isLoading) return;
++    setIsLoading(true);
++
++    const timeoutId = setTimeout(() => {
++      window.location.reload();
++    }, 30000);
++
++    const mode = biosMode === 'normal' ? 'bios' : 'normal';
++
++    api
++      .setBiosMode(mode)
++      .then((rsp) => {
++        if (rsp.code !== 0) {
++          setIsLoading(false);
++          clearTimeout(timeoutId);
++        }
++      })
++      .catch((err) => {
++        console.log(err);
++        setIsLoading(false);
++        clearTimeout(timeoutId);
++      });
++  }
++
++  return (
++    <>
++      <div
++        className={clsx(
++          'flex h-[30px] cursor-pointer select-none items-center space-x-2 rounded px-3 hover:bg-neutral-700/70',
++          biosMode === 'bios' ? 'text-blue-500' : 'text-neutral-300'
++        )}
++        onClick={updateBiosMode}
++      >
++        <MonitorCog className={clsx({ 'animate-spin text-blue-500': isLoading })} size={18} />
++        <span>{t('mouse.biosHid')}</span>
++      </div>
++    </>
++  );
++};
+diff --git a/web/src/pages/desktop/menu/mouse/index.tsx b/web/src/pages/desktop/menu/mouse/index.tsx
+index f63f6c3..7461725 100644
+--- a/web/src/pages/desktop/menu/mouse/index.tsx
++++ b/web/src/pages/desktop/menu/mouse/index.tsx
+@@ -9,6 +9,7 @@ import { mouseModeAtom, mouseStyleAtom, scrollIntervalAtom } from '@/jotai/mouse
+ import { MenuItem } from '@/components/menu-item.tsx';
+ 
+ import { Cursor } from './cursor.tsx';
++import { BiosMode } from './bios-mode.tsx';
+ import { HidMode } from './hid-mode.tsx';
+ import { MouseMode } from './mouse-mode.tsx';
+ import { ResetHid } from './reset-hid.tsx';
+@@ -45,6 +46,7 @@ export const Mouse = () => {
+       <Speed />
+       <Divider style={{ margin: '10px 0' }} />
+ 
++      <BiosMode />
+       <HidMode />
+       <ResetHid />
+     </div>
+-- 
+2.34.1
+
