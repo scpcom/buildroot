@@ -1,0 +1,55 @@
+From 9f634a7a79f41af8a72f73e599591301b468f7cd Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 12 Oct 2025 16:04:11 +0200
+Subject: [PATCH] server: hid: create/remove /boot/BIOS
+
+---
+ server/service/hid/bios.go | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/server/service/hid/bios.go b/server/service/hid/bios.go
+index bba2780..e92ec22 100644
+--- a/server/service/hid/bios.go
++++ b/server/service/hid/bios.go
+@@ -2,11 +2,16 @@ package hid
+ 
+ import (
+ 	"NanoKVM-Server/proto"
++	"os"
+ 
+ 	"github.com/gin-gonic/gin"
+ 	log "github.com/sirupsen/logrus"
+ )
+ 
++const (
++	BiosFile = "/boot/BIOS"
++)
++
+ func (s *Service) GetBiosMode(c *gin.Context) {
+ 	var rsp proto.Response
+ 
+@@ -40,6 +45,21 @@ func (s *Service) SetBiosMode(c *gin.Context) {
+ 		return
+ 	}
+ 
++	biosboot, _ := isFuncExist(BiosFile)
++	if !biosboot && req.Mode == ModeHidBios {
++		if err := os.WriteFile(BiosFile, []byte("\n"), 0o666); err != nil {
++			log.Errorf("write bios file failed: %s", err)
++			rsp.ErrRsp(c, -2, "write bios file failed")
++			return
++		}
++	} else if biosboot && req.Mode != ModeHidBios {
++		if err := os.Remove(BiosFile); err != nil {
++			log.Errorf("remove bios file failed: %s", err)
++			rsp.ErrRsp(c, -2, "remove bios file failed")
++			return
++		}
++	}
++
+ 	hidmode, _ := getHidMode()
+ 
+ 	msg, err := setHidMode(hidmode, req.Mode)
+-- 
+2.34.1
+
