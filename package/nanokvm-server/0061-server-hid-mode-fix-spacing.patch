@@ -1,0 +1,34 @@
+From 4deb2c723e4dc0b3ee7b896188eb628f185800c6 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 12 Oct 2025 23:08:27 +0200
+Subject: [PATCH] server: hid: mode: fix spacing
+
+---
+ server/service/hid/mode.go | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+index 22b2896..f489139 100644
+--- a/server/service/hid/mode.go
++++ b/server/service/hid/mode.go
+@@ -244,7 +244,7 @@ func setHidMode(hidmode, biosmode string) (string, error) {
+ 		maxPkt = "0x08"
+ 		strVen = "Alps Electric"
+ 		strPrd = "Apple USB Keyboard"
+-        }
++	}
+ 
+ 	hidBcdUsb := fmt.Sprintf("%s/%s", HidGadgetPath, "bcdUSB")
+ 	hidBcdDev := fmt.Sprintf("%s/%s", HidGadgetPath, "bcdDevice")
+@@ -334,7 +334,7 @@ func setHidMode(hidmode, biosmode string) (string, error) {
+ 		if othFuncEn && !othFuncOn && hidmode == ModeNormal {
+ 			if err := os.Mkdir(othFunction, 0o755); err != nil {
+ 				log.Fatalf("Could create function: %v", err)
+-                                return "create function failed", err
++				return "create function failed", err
+ 			}
+ 			othFuncOn, _ = isFuncExist(othFunction)
+ 		}
+-- 
+2.34.1
+
