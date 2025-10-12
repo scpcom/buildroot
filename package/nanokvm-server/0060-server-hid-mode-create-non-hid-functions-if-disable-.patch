@@ -1,0 +1,84 @@
+From ee4fc1ae1506097fb3fadd82a32dc2f8af92a999 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 12 Oct 2025 22:27:27 +0200
+Subject: [PATCH] server: hid: mode: create non-hid functions if disable
+ HID-Only mode
+
+---
+ server/service/hid/mode.go | 49 +++++++++++++++++++++++++++++---------
+ 1 file changed, 38 insertions(+), 11 deletions(-)
+
+diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+index b49d25d..22b2896 100644
+--- a/server/service/hid/mode.go
++++ b/server/service/hid/mode.go
+@@ -40,6 +40,12 @@ var biosMap = map[string]string{
+ 	"1": ModeHidBios,
+ }
+ 
++var funcMap = map[string]string{
++	"mass_storage.disk0": "/boot/usb.disk0",
++	"ncm.usb0": "/boot/usb.ncm",
++	"rndis.usb0": "/boot/usb.rndis0",
++}
++
+ func (s *Service) GetHidMode(c *gin.Context) {
+ 	var rsp proto.Response
+ 
+@@ -314,21 +320,42 @@ func setHidMode(hidmode, biosmode string) (string, error) {
+ 		return "set strings/0x409/configuration failed", err
+ 	}
+ 
+-	for _, hidfunc := range []string{"mass_storage.disk0", "ncm.usb0", "rndis.usb0"} {
+-		hidFunction := fmt.Sprintf("%s/%s", HidFuncPath, hidfunc)
+-		hidSymLink := fmt.Sprintf("%s/%s", HidConfPath, hidfunc)
+-		hidFuncOn, _ := isFuncExist(hidFunction)
+-		hidConfOn, _ := isFuncExist(hidSymLink)
++	// configure non-hid functions
++	for _, othfunc := range []string{"mass_storage.disk0", "ncm.usb0", "rndis.usb0"} {
++		othFunction := fmt.Sprintf("%s/%s", HidFuncPath, othfunc)
++		othSymLink := fmt.Sprintf("%s/%s", HidConfPath, othfunc)
++		othFuncOn, _ := isFuncExist(othFunction)
++		othConfOn, _ := isFuncExist(othSymLink)
+ 
+-		if hidFuncOn && hidConfOn && hidmode != ModeNormal {
+-			if err := os.Remove(hidSymLink); err != nil {
++		bootFile, othFuncEn := funcMap[othfunc]
++		if othFuncEn {
++			othFuncEn, _ = isFuncExist(bootFile)
++		}
++		if othFuncEn && !othFuncOn && hidmode == ModeNormal {
++			if err := os.Mkdir(othFunction, 0o755); err != nil {
++				log.Fatalf("Could create function: %v", err)
++                                return "create function failed", err
++			}
++			othFuncOn, _ = isFuncExist(othFunction)
++		}
++		if othFuncOn && othfunc == "mass_storage.disk0" {
++			removableFlag := fmt.Sprintf("%s/%s", othFunction, "lun.0/removable")
++
++			if err := os.WriteFile(removableFlag, []byte("1"), 0o666); err != nil {
++				log.Errorf("set removable failed: %s", err)
++				return "set removable failed", err
++			}
++		}
++
++		if othFuncOn && othConfOn && hidmode != ModeNormal {
++			if err := os.Remove(othSymLink); err != nil {
+ 				log.Fatalf("Could not remove symlink: %v", err)
+-				return "unlink hid failed", err
++				return "unlink function failed", err
+ 			}
+-		} else if hidFuncOn && !hidConfOn && hidmode == ModeNormal {
+-			if err := os.Symlink(hidFunction, hidSymLink); err != nil {
++		} else if othFuncOn && !othConfOn && hidmode == ModeNormal {
++			if err := os.Symlink(othFunction, othSymLink); err != nil {
+ 				log.Errorf("Could not create symlink: %v", err)
+-				return "symlink hid failed", err
++				return "symlink function failed", err
+ 			}
+ 		}
+ 	}
+-- 
+2.34.1
+
