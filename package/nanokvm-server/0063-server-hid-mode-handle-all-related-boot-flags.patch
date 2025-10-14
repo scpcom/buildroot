@@ -1,0 +1,139 @@
+From 0082a761869ace509efd2aef057c4cc556ba6676 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Tue, 14 Oct 2025 01:18:39 +0200
+Subject: [PATCH] server: hid: mode: handle all related boot flags
+
+---
+ server/service/hid/bios.go  |  4 ---
+ server/service/hid/mode.go  | 52 +++++++++++++++++++++++++++++++++++++
+ server/service/hid/reset.go |  7 +++++
+ 3 files changed, 59 insertions(+), 4 deletions(-)
+
+diff --git a/server/service/hid/bios.go b/server/service/hid/bios.go
+index e92ec22..f9f7c77 100644
+--- a/server/service/hid/bios.go
++++ b/server/service/hid/bios.go
+@@ -8,10 +8,6 @@ import (
+ 	log "github.com/sirupsen/logrus"
+ )
+ 
+-const (
+-	BiosFile = "/boot/BIOS"
+-)
+-
+ func (s *Service) GetBiosMode(c *gin.Context) {
+ 	var rsp proto.Response
+ 
+diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+index a0371c5..8936b45 100644
+--- a/server/service/hid/mode.go
++++ b/server/service/hid/mode.go
+@@ -28,7 +28,12 @@ const (
+ 	HidOnlyModeScript = "/kvmapp/system/init.d/S03usbhid"
+ 	KbdOnlyModeScript = "/kvmapp/system/init.d/S03usbkeyboard"
+ 	TargetModeScript  = "/etc/init.d/S03usbdev"
++
++	BiosFile          = "/boot/BIOS"
++	NoHidFile         = "/boot/disable_hid"
+ 	NoWowFile         = "/boot/usb.notwakeup"
++	UsbIdVenFile      = "/boot/usb.vid"
++	UsbIdPrdFile      = "/boot/usb.pid"
+ )
+ 
+ type hidConf struct {
+@@ -108,6 +113,15 @@ func (s *Service) SetHidMode(c *gin.Context) {
+ 		return
+ 	}
+ 
++	bootHidOff, _ := isFuncExist(NoHidFile)
++	if bootHidOff {
++		if err := os.Remove(NoHidFile); err != nil {
++			log.Errorf("remove disable hid file failed: %s", err)
++			rsp.ErrRsp(c, -2, "remove disable hid file failed")
++			return
++		}
++	}
++
+ 	biosmode, _ := getBiosMode();
+ 
+ 	msg, err := setHidMode(req.Mode, biosmode)
+@@ -182,6 +196,13 @@ func copyModeFile(srcScript string) error {
+ }
+ 
+ func getHidMode() (string, error) {
++	hidGadgetOn, _ := isFuncExist(HidGadgetPath)
++
++	// gadget is disabled
++	if (!hidGadgetOn) {
++		return modeMap["0x0510"], nil
++	}
++
+ 	data, err := os.ReadFile(ModeFlag)
+ 	if err != nil {
+ 		log.Errorf("failed to read %s: %s", ModeFlag, err)
+@@ -344,6 +365,26 @@ func setHidMode(hidmode, biosmode string) (string, error) {
+ 		strSNr = ""
+ 	}
+ 
++	bootIdVen, _ := isFuncExist(UsbIdVenFile)
++	bootIdPrd, _ := isFuncExist(UsbIdPrdFile)
++	if bootIdVen && bootIdPrd {
++		data, err := os.ReadFile(UsbIdVenFile)
++		if err != nil {
++			log.Errorf("failed to read %s: %s", UsbIdVenFile, err)
++			return "", err
++		}
++
++		idVen = strings.TrimSpace(string(data))
++
++		data, err = os.ReadFile(UsbIdPrdFile)
++		if err != nil {
++			log.Errorf("failed to read %s: %s", UsbIdPrdFile, err)
++			return "", err
++		}
++
++		idPrd = strings.TrimSpace(string(data))
++	}
++
+ 	hidBcdUsb := fmt.Sprintf("%s/%s", HidGadgetPath, "bcdUSB")
+ 	hidBcdDev := fmt.Sprintf("%s/%s", HidGadgetPath, "bcdDevice")
+ 	hidIdVen := fmt.Sprintf("%s/%s", HidGadgetPath, "idVendor")
+@@ -475,6 +516,17 @@ func setHidMode(hidmode, biosmode string) (string, error) {
+ func getBiosMode() (string, error) {
+ 	hidFunction := fmt.Sprintf("%s/%s", HidConfPath, "hid.GS0")
+ 	hidBiosFlag := fmt.Sprintf("%s/subclass", hidFunction)
++	hidFuncOn, _ := isFuncExist(hidFunction)
++	biosboot, _ := isFuncExist(BiosFile)
++
++	// hid is disabled
++	if (!hidFuncOn) {
++		if biosboot {
++			return biosMap["1"], nil
++		} else {
++			return biosMap["0"], nil
++		}
++	}
+ 
+ 	data, err := os.ReadFile(hidBiosFlag)
+ 	if err != nil {
+diff --git a/server/service/hid/reset.go b/server/service/hid/reset.go
+index 45d5ae5..7eb064a 100644
+--- a/server/service/hid/reset.go
++++ b/server/service/hid/reset.go
+@@ -38,6 +38,13 @@ func (s *Service) Reset(c *gin.Context) {
+ }
+ 
+ func disable() (error) {
++	hidGadgetOn, _ := isFuncExist(HidGadgetPath)
++
++	// gadget already disabled
++	if (!hidGadgetOn) {
++		return nil
++	}
++
+ 	// reset USB
+ 	f, err := os.OpenFile("/sys/kernel/config/usb_gadget/g0/UDC", os.O_WRONLY, 0644)
+ 	if err != nil {
+-- 
+2.34.1
+
