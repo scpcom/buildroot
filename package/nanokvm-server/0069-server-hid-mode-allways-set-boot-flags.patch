@@ -1,0 +1,229 @@
+From b6fcb6c7575beb22b6ea19caaa09522adde3e628 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Thu, 16 Oct 2025 21:39:24 +0200
+Subject: [PATCH] server: hid: mode: allways set boot flags
+
+---
+ server/service/hid/bios.go | 22 +++-------
+ server/service/hid/mode.go | 84 +++++++++++++++++++++++++++++++-------
+ server/service/hid/wow.go  | 22 +++-------
+ 3 files changed, 81 insertions(+), 47 deletions(-)
+
+diff --git a/server/service/hid/bios.go b/server/service/hid/bios.go
+index 35d3b0d..4e58f61 100644
+--- a/server/service/hid/bios.go
++++ b/server/service/hid/bios.go
+@@ -2,7 +2,6 @@ package hid
+ 
+ import (
+ 	"NanoKVM-Server/proto"
+-	"os"
+ 
+ 	"github.com/gin-gonic/gin"
+ 	log "github.com/sirupsen/logrus"
+@@ -41,21 +40,6 @@ func (s *Service) SetBiosMode(c *gin.Context) {
+ 		return
+ 	}
+ 
+-	biosboot, _ := isFuncExist(BiosFile)
+-	if !biosboot && req.Mode == ModeHidBios {
+-		if err := os.WriteFile(BiosFile, []byte("\n"), 0o666); err != nil {
+-			log.Errorf("write bios file failed: %s", err)
+-			rsp.ErrRsp(c, -2, "write bios file failed")
+-			return
+-		}
+-	} else if biosboot && req.Mode != ModeHidBios {
+-		if err := os.Remove(BiosFile); err != nil {
+-			log.Errorf("remove bios file failed: %s", err)
+-			rsp.ErrRsp(c, -2, "remove bios file failed")
+-			return
+-		}
+-	}
+-
+ 	hidmode, _ := getHidMode()
+ 	wowmode, _ := getWoWMode();
+ 
+@@ -65,5 +49,11 @@ func (s *Service) SetBiosMode(c *gin.Context) {
+ 		return
+ 	}
+ 
++	msg, err = setBootBios(req.Mode)
++	if err != nil {
++		rsp.ErrRsp(c, -4, msg)
++		return
++	}
++
+ 	rsp.OkRsp(c)
+ }
+diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+index a9c8dfb..cf8a0b2 100644
+--- a/server/service/hid/mode.go
++++ b/server/service/hid/mode.go
+@@ -125,21 +125,6 @@ func (s *Service) SetHidMode(c *gin.Context) {
+ 		return
+ 	}
+ 
+-	bootHidOff, _ := isFuncExist(NoHidFile)
+-	if !bootHidOff && req.Mode == ModeNoHid {
+-		if err := os.WriteFile(NoHidFile, []byte("\n"), 0o666); err != nil {
+-			log.Errorf("write disable hid file failed: %s", err)
+-			rsp.ErrRsp(c, -2, "write disable hid file failed")
+-			return
+-		}
+-	} else 	if bootHidOff && req.Mode != ModeNoHid {
+-		if err := os.Remove(NoHidFile); err != nil {
+-			log.Errorf("remove disable hid file failed: %s", err)
+-			rsp.ErrRsp(c, -2, "remove disable hid file failed")
+-			return
+-		}
+-	}
+-
+ 	biosmode, _ := getBiosMode();
+ 	wowmode, _ := getBiosMode();
+ 
+@@ -149,6 +134,24 @@ func (s *Service) SetHidMode(c *gin.Context) {
+ 		return
+ 	}
+ 
++	msg, err = setBootNoHid(req.Mode)
++	if err != nil {
++		rsp.ErrRsp(c, -4, msg)
++		return
++	}
++
++	msg, err = setBootBios(biosmode)
++	if err != nil {
++		rsp.ErrRsp(c, -4, msg)
++		return
++	}
++
++	msg, err = setBootWoW(wowmode)
++	if err != nil {
++		rsp.ErrRsp(c, -4, msg)
++		return
++	}
++
+ 	rsp.OkRsp(c)
+ }
+ 
+@@ -240,6 +243,23 @@ func getHidMode() (string, error) {
+ 	return mode, nil
+ }
+ 
++func setBootNoHid(mode string) (string, error) {
++	bootHidOff, _ := isFuncExist(NoHidFile)
++	if !bootHidOff && mode == ModeNoHid {
++		if err := os.WriteFile(NoHidFile, []byte("\n"), 0o666); err != nil {
++			log.Errorf("write disable hid file failed: %s", err)
++			return "write disable hid file failed", err
++		}
++	} else 	if bootHidOff && mode != ModeNoHid {
++		if err := os.Remove(NoHidFile); err != nil {
++			log.Errorf("remove disable hid file failed: %s", err)
++			return "remove disable hid file failed", err
++		}
++	}
++
++	return "", nil
++}
++
+ func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 	h := GetHid()
+ 	h.Lock()
+@@ -572,6 +592,23 @@ func getBiosMode() (string, error) {
+ 	return mode, nil
+ }
+ 
++func setBootBios(biosmode string) (string, error) {
++	biosboot, _ := isFuncExist(BiosFile)
++	if !biosboot && biosmode == ModeHidBios {
++		if err := os.WriteFile(BiosFile, []byte("\n"), 0o666); err != nil {
++			log.Errorf("write bios file failed: %s", err)
++			return "write bios file failed", err
++		}
++	} else if biosboot && biosmode != ModeHidBios {
++		if err := os.Remove(BiosFile); err != nil {
++			log.Errorf("remove bios file failed: %s", err)
++			return "remove bios file failed", err
++		}
++	}
++
++	return "", nil
++}
++
+ func getWoWMode() (string, error) {
+ 	hidFunction := fmt.Sprintf("%s/%s", HidConfPath, "hid.GS0")
+ 	hidWakeOnWr := fmt.Sprintf("%s/wakeup_on_write", hidFunction)
+@@ -603,6 +640,23 @@ func getWoWMode() (string, error) {
+ 	return mode, nil
+ }
+ 
++func setBootWoW(wowmode string) (string, error) {
++	nowowboot, _ := isFuncExist(NoWowFile)
++	if !nowowboot && wowmode != ModeHidWoW {
++		if err := os.WriteFile(NoWowFile, []byte("\n"), 0o666); err != nil {
++			log.Errorf("write wow file failed: %s", err)
++			return "write wow file failed", err
++		}
++	} else if nowowboot && wowmode == ModeHidWoW {
++		if err := os.Remove(NoWowFile); err != nil {
++			log.Errorf("remove wow file failed: %s", err)
++			return "remove wow file failed", err
++		}
++	}
++
++	return "", nil
++}
++
+ func setOtgRole(devicemode bool) (string, error) {
+ 	isCviUsb, _ := isFuncExist(CviUsbOtgRole)
+ 
+diff --git a/server/service/hid/wow.go b/server/service/hid/wow.go
+index a202639..25cd270 100644
+--- a/server/service/hid/wow.go
++++ b/server/service/hid/wow.go
+@@ -2,7 +2,6 @@ package hid
+ 
+ import (
+ 	"NanoKVM-Server/proto"
+-	"os"
+ 
+ 	"github.com/gin-gonic/gin"
+ 	log "github.com/sirupsen/logrus"
+@@ -41,21 +40,6 @@ func (s *Service) SetWoWMode(c *gin.Context) {
+ 		return
+ 	}
+ 
+-	nowowboot, _ := isFuncExist(NoWowFile)
+-	if !nowowboot && req.Mode != ModeHidWoW {
+-		if err := os.WriteFile(NoWowFile, []byte("\n"), 0o666); err != nil {
+-			log.Errorf("write wow file failed: %s", err)
+-			rsp.ErrRsp(c, -2, "write wow file failed")
+-			return
+-		}
+-	} else if nowowboot && req.Mode == ModeHidWoW {
+-		if err := os.Remove(NoWowFile); err != nil {
+-			log.Errorf("remove wow file failed: %s", err)
+-			rsp.ErrRsp(c, -2, "remove wow file failed")
+-			return
+-		}
+-	}
+-
+ 	hidmode, _ := getHidMode()
+ 	biosmode, _ := getBiosMode();
+ 
+@@ -65,5 +49,11 @@ func (s *Service) SetWoWMode(c *gin.Context) {
+ 		return
+ 	}
+ 
++	msg, err = setBootWoW(req.Mode)
++	if err != nil {
++		rsp.ErrRsp(c, -3, msg)
++		return
++	}
++
+ 	rsp.OkRsp(c)
+ }
+-- 
+2.34.1
+
