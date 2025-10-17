@@ -1,0 +1,315 @@
+From 2a617d219896d90fa29b79e32369dc6e3615fc6f Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Fri, 17 Oct 2025 05:11:17 +0200
+Subject: [PATCH] web: hid-mode: add toggle for bios and wake on write
+
+---
+ server/proto/hid.go                           |  2 +
+ server/service/hid/mode.go                    | 24 +++--
+ web/src/api/hid.ts                            | 19 +++-
+ web/src/i18n/locales/en.ts                    |  2 +
+ web/src/jotai/mouse.ts                        |  3 +
+ web/src/pages/desktop/menu/mouse/hid-mode.tsx | 95 +++++++++++++++++--
+ 6 files changed, 126 insertions(+), 19 deletions(-)
+
+diff --git a/server/proto/hid.go b/server/proto/hid.go
+index e14a8ec..e120f7e 100644
+--- a/server/proto/hid.go
++++ b/server/proto/hid.go
+@@ -22,4 +22,6 @@ type GetHidModeRsp struct {
+ 
+ type SetHidModeReq struct {
+ 	Mode string `validate:"required"` // normal or hid-only
++	Bios string `validate:"required"` // normal or bios
++	Wow string `validate:"required"` // no-wow or wow
+ }
+diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+index cf8a0b2..f7dadd9 100644
+--- a/server/service/hid/mode.go
++++ b/server/service/hid/mode.go
+@@ -108,7 +108,20 @@ func (s *Service) SetHidMode(c *gin.Context) {
+ 		return
+ 	}
+ 
+-	if mode, _ := getHidMode(); req.Mode == mode {
++	mode, _ := getHidMode();
++	biosmode, _ := getBiosMode();
++	wowmode, _ := getBiosMode();
++
++	newBios := biosmode
++	if req.Bios == ModeNonBios || req.Bios == ModeHidBios {
++		newBios = req.Bios
++	}
++	newWow := wowmode
++	if req.Wow == ModeHidWoW || req.Wow == ModeNoWoW {
++		newWow = req.Wow
++	}
++
++	if req.Mode == mode && newBios == biosmode && newWow == wowmode {
+ 		rsp.OkRsp(c)
+ 		return
+ 	}
+@@ -125,10 +138,7 @@ func (s *Service) SetHidMode(c *gin.Context) {
+ 		return
+ 	}
+ 
+-	biosmode, _ := getBiosMode();
+-	wowmode, _ := getBiosMode();
+-
+-	msg, err := setHidMode(req.Mode, biosmode, wowmode)
++	msg, err := setHidMode(req.Mode, newBios, newWow)
+ 	if err != nil {
+ 		rsp.ErrRsp(c, -4, msg)
+ 		return
+@@ -140,13 +150,13 @@ func (s *Service) SetHidMode(c *gin.Context) {
+ 		return
+ 	}
+ 
+-	msg, err = setBootBios(biosmode)
++	msg, err = setBootBios(newBios)
+ 	if err != nil {
+ 		rsp.ErrRsp(c, -4, msg)
+ 		return
+ 	}
+ 
+-	msg, err = setBootWoW(wowmode)
++	msg, err = setBootWoW(newWow)
+ 	if err != nil {
+ 		rsp.ErrRsp(c, -4, msg)
+ 		return
+diff --git a/web/src/api/hid.ts b/web/src/api/hid.ts
+index b64b55d..bb5c958 100644
+--- a/web/src/api/hid.ts
++++ b/web/src/api/hid.ts
+@@ -23,15 +23,30 @@ export function setBiosMode(mode: string) {
+   return http.post('/api/hid/bios', data);
+ }
+ 
++// get wake on write mode
++export function getWowMode() {
++  return http.get('/api/hid/wow');
++}
++
++// set wake on write mode
++export function setWowMode(mode: string) {
++  const data = {
++    mode
++  };
++  return http.post('/api/hid/wow', data);
++}
++
+ // get hid mode
+ export function getHidMode() {
+   return http.get('/api/hid/mode');
+ }
+ 
+ // set hid mode
+-export function setHidMode(mode: string) {
++export function setHidMode(mode: string, bios: string, wow: string) {
+   const data = {
+-    mode
++    mode,
++    bios,
++    wow
+   };
+   return http.post('/api/hid/mode', data);
+ }
+diff --git a/web/src/i18n/locales/en.ts b/web/src/i18n/locales/en.ts
+index 9934083..bc2b964 100644
+--- a/web/src/i18n/locales/en.ts
++++ b/web/src/i18n/locales/en.ts
+@@ -103,6 +103,8 @@ const en = {
+         hidonly: 'HID-Only',
+         kbdonly: 'Keyboard-Only',
+         nohid: 'No HID',
++        bios: 'BIOS',
++        wow: 'Wake on Write',
+         enable: 'Enable',
+         close: 'Close'
+       }
+diff --git a/web/src/jotai/mouse.ts b/web/src/jotai/mouse.ts
+index d9166e5..099aaee 100644
+--- a/web/src/jotai/mouse.ts
++++ b/web/src/jotai/mouse.ts
+@@ -12,5 +12,8 @@ export const scrollIntervalAtom = atom(0);
+ // hid bios mode: normal or bios
+ export const biosModeAtom = atom<'normal' | 'bios'>('normal');
+ 
++// hid wow mode: no-wow or wow
++export const wowModeAtom = atom<'no-wow' | 'wow'>('wow');
++
+ // hid mode: normal, hid-only, kbd-only or no-hid
+ export const hidModeAtom = atom<'normal' | 'hid-only' | 'kbd-only' | 'no-hid'>('normal');
+diff --git a/web/src/pages/desktop/menu/mouse/hid-mode.tsx b/web/src/pages/desktop/menu/mouse/hid-mode.tsx
+index 797225b..60f9708 100644
+--- a/web/src/pages/desktop/menu/mouse/hid-mode.tsx
++++ b/web/src/pages/desktop/menu/mouse/hid-mode.tsx
+@@ -1,19 +1,23 @@
+ import { useEffect, useState } from 'react';
+-import { Button, Divider, Modal, Select, Typography } from 'antd';
++import { Button, Divider, Modal, Select, Switch, Typography } from 'antd';
+ import clsx from 'clsx';
+ import { useAtom } from 'jotai';
+ import { PenIcon } from 'lucide-react';
+ import { useTranslation } from 'react-i18next';
+ 
+ import * as api from '@/api/hid.ts';
+-import { hidModeAtom } from '@/jotai/mouse.ts';
++import { hidModeAtom, biosModeAtom, wowModeAtom } from '@/jotai/mouse.ts';
+ 
+ const { Paragraph } = Typography;
+ 
+ export const HidMode = () => {
+   const { t } = useTranslation();
+   const [hidMode, setHidMode] = useAtom(hidModeAtom);
++  const [biosMode, setBiosMode] = useAtom(biosModeAtom);
++  const [wowMode, setWowMode] = useAtom(wowModeAtom);
+   const [toggleMode, setToggleMode] = useState('');
++  const [toggleBIOS, setToggleBIOS] = useState(biosBool());
++  const [toggleWoW, setToggleWoW] = useState(wowBool());
+ 
+   const [isLoading, setIsLoading] = useState(false);
+   const [isModalOpen, setIsModalOpen] = useState(false);
+@@ -28,8 +32,22 @@ export const HidMode = () => {
+ 
+   useEffect(() => {
+     getHidMode();
++    getBiosMode();
++    getWowMode();
+   }, []);
+ 
++  function biosBool(): boolean {
++    return biosMode === 'bios';
++  }
++
++  function wowBool(): boolean {
++    return wowMode === 'wow';
++  }
++
++  function noModeChange(): boolean {
++    return (hidMode === toggleMode || toggleMode === '') && (biosBool() === toggleBIOS) && (wowBool() === toggleWoW)
++  }
++
+   function getHidMode() {
+     setIsLoading(true);
+ 
+@@ -49,22 +67,24 @@ export const HidMode = () => {
+   }
+ 
+   function updateHidMode() {
+-    if (hidMode === toggleMode || toggleMode === '') {
++    if (isLoading) return;
++    setIsLoading(true);
++
++    if (noModeChange()) {
+       setIsModalOpen(false);
+       return;
+     }
+ 
+-    if (isLoading) return;
+-    setIsLoading(true);
+-
+     const timeoutId = setTimeout(() => {
+       window.location.reload();
+     }, 5000);
+ 
+-    const mode = toggleMode;
++    const mode = toggleMode === '' ? hidMode : toggleMode;
++    const bios = toggleBIOS ? 'bios' : 'normal';
++    const wow = toggleWoW ? 'wow' : 'no-wow';
+ 
+     api
+-      .setHidMode(mode)
++      .setHidMode(mode, bios, wow)
+       .then((rsp) => {
+         if (rsp.code !== 0) {
+           setErrMsg(rsp.msg);
+@@ -79,6 +99,48 @@ export const HidMode = () => {
+       });
+   }
+ 
++  function getBiosMode() {
++    setIsLoading(true);
++
++    api
++      .getBiosMode()
++      .then((rsp) => {
++        if (rsp.code !== 0) {
++          return;
++        }
++
++        setBiosMode(rsp.data.mode);
++      })
++      .finally(() => {
++        setIsLoading(false);
++      });
++  }
++
++  function getWowMode() {
++    setIsLoading(true);
++
++    api
++      .getWowMode()
++      .then((rsp) => {
++        if (rsp.code !== 0) {
++          return;
++        }
++
++        setWowMode(rsp.data.mode);
++      })
++      .finally(() => {
++        setIsLoading(false);
++      });
++  }
++
++  function updateModal(modal: boolean) {
++    if (modal) {
++      setToggleBIOS(biosBool());
++      setToggleWoW(wowBool());
++    }
++    setIsModalOpen(modal);
++  }
++
+   return (
+     <>
+       <div
+@@ -86,7 +148,7 @@ export const HidMode = () => {
+           'flex h-[30px] cursor-pointer select-none items-center space-x-2 rounded px-3 hover:bg-neutral-700/70',
+           hidMode === 'hid-only' ? 'text-blue-500' : hidMode === 'kbd-only' ? 'text-blue-500' : hidMode === 'no-hid' ? 'text-yellow-400' : 'text-neutral-300'
+         )}
+-        onClick={() => setIsModalOpen(true)}
++        onClick={() => updateModal(true)}
+       >
+         <PenIcon size={18} />
+         <span>{t('mouse.hidMode.title')}</span>
+@@ -124,13 +186,26 @@ export const HidMode = () => {
+             options={ModeOptions}
+             onSelect={setToggleMode}
+           />
++
++          <div className="flex flex-col">
++            <span>{t('mouse.hidMode.bios')}</span>
++          </div>
++
++          <Switch checked={toggleBIOS} loading={isLoading} onChange={setToggleBIOS} />
++
++          <div className="flex flex-col">
++            <span>{t('mouse.hidMode.wow')}</span>
++          </div>
++
++          <Switch checked={toggleWoW} loading={isLoading} onChange={setToggleWoW} />
++
+         </div>
+ 
+         {errMsg && <div className="pt-1 text-sm text-red-500">{errMsg}</div>}
+ 
+         <div className="flex justify-center pt-5">
+           <Button danger type="primary" loading={isLoading} onClick={updateHidMode}>
+-            {hidMode === toggleMode ? t('mouse.hidMode.close') : toggleMode === '' ? t('mouse.hidMode.close') : t('mouse.hidMode.enable')}
++            {noModeChange() ? t('mouse.hidMode.close') : t('mouse.hidMode.enable')}
+           </Button>
+         </div>
+       </Modal>
+-- 
+2.34.1
+
