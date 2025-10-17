@@ -1,0 +1,234 @@
+From caf5bd5f262baf0840bf17f44461c9ac797a427d Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Thu, 16 Oct 2025 04:20:31 +0200
+Subject: [PATCH] server: hid: mode: add wake on write api
+
+---
+ server/proto/hid.go        |  8 +++++
+ server/router/hid.go       |  3 ++
+ server/service/hid/bios.go |  3 +-
+ server/service/hid/mode.go | 47 +++++++++++++++++++++++---
+ server/service/hid/wow.go  | 69 ++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 125 insertions(+), 5 deletions(-)
+ create mode 100644 server/service/hid/wow.go
+
+diff --git a/server/proto/hid.go b/server/proto/hid.go
+index 6ebdbb5..e14a8ec 100644
+--- a/server/proto/hid.go
++++ b/server/proto/hid.go
+@@ -8,6 +8,14 @@ type SetBiosModeReq struct {
+ 	Mode string `validate:"required"` // normal or bios
+ }
+ 
++type GetWoWModeRsp struct {
++	Mode string `json:"mode"` // no-wow or wow
++}
++
++type SetWoWModeReq struct {
++	Mode string `validate:"required"` // no-wow or wow
++}
++
+ type GetHidModeRsp struct {
+ 	Mode string `json:"mode"` // normal or hid-only
+ }
+diff --git a/server/router/hid.go b/server/router/hid.go
+index f281005..36290ae 100644
+--- a/server/router/hid.go
++++ b/server/router/hid.go
+@@ -17,6 +17,9 @@ func hidRouter(r *gin.Engine) {
+ 	api.GET("/hid/bios", service.GetBiosMode)  // get hid bios mode
+ 	api.POST("/hid/bios", service.SetBiosMode) // set hid bios mode
+ 
++	api.GET("/hid/wow", service.GetWoWMode)  // get hid wake on write mode
++	api.POST("/hid/wow", service.SetWoWMode) // set hid wake on write mode
++
+ 	api.GET("/hid/mode", service.GetHidMode)  // get hid mode
+ 	api.POST("/hid/mode", service.SetHidMode) // set hid mode
+ }
+diff --git a/server/service/hid/bios.go b/server/service/hid/bios.go
+index f9f7c77..35d3b0d 100644
+--- a/server/service/hid/bios.go
++++ b/server/service/hid/bios.go
+@@ -57,8 +57,9 @@ func (s *Service) SetBiosMode(c *gin.Context) {
+ 	}
+ 
+ 	hidmode, _ := getHidMode()
++	wowmode, _ := getWoWMode();
+ 
+-	msg, err := setHidMode(hidmode, req.Mode)
++	msg, err := setHidMode(hidmode, req.Mode, wowmode)
+ 	if err != nil {
+ 		rsp.ErrRsp(c, -2, msg)
+ 		return
+diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+index 07794dd..a9c8dfb 100644
+--- a/server/service/hid/mode.go
++++ b/server/service/hid/mode.go
+@@ -21,6 +21,9 @@ const (
+ 	ModeNonBios = "normal"
+ 	ModeHidBios = "bios"
+ 
++	ModeNoWoW  = "no-wow"
++	ModeHidWoW  = "wow"
++
+ 	CviUsbOtgRole     = "/proc/cviusb/otg_role"
+ 	HidGadgetPath     = "/sys/kernel/config/usb_gadget/g0"
+ 	HidConfPath       = "/sys/kernel/config/usb_gadget/g0/configs/c.1"
+@@ -57,6 +60,11 @@ var biosMap = map[string]string{
+ 	"1": ModeHidBios,
+ }
+ 
++var wowMap = map[string]string{
++	"0": ModeNoWoW,
++	"1": ModeHidWoW,
++}
++
+ var confMap = map[string]hidConf{
+ 	// keyboard
+ 	"hid.GS0": { []byte("1"), []byte("8"), []byte( "\x05\x01\x09\x06\xa1\x01\x05\x07\x19\xe0\x29\xe7\x15\x00\x25\x01\x75\x01\x95\x08\x81\x02\x95\x01\x75\x08\x81\x03\x95\x05\x75\x01\x05\x08\x19\x01\x29\x05\x91\x02\x95\x01\x75\x03\x91\x03\x95\x06\x75\x08\x15\x00\x25\x65\x05\x07\x19\x00\x29\x65\x81\x00\xc0" ) },
+@@ -133,8 +141,9 @@ func (s *Service) SetHidMode(c *gin.Context) {
+ 	}
+ 
+ 	biosmode, _ := getBiosMode();
++	wowmode, _ := getBiosMode();
+ 
+-	msg, err := setHidMode(req.Mode, biosmode)
++	msg, err := setHidMode(req.Mode, biosmode, wowmode)
+ 	if err != nil {
+ 		rsp.ErrRsp(c, -4, msg)
+ 		return
+@@ -231,7 +240,7 @@ func getHidMode() (string, error) {
+ 	return mode, nil
+ }
+ 
+-func setHidMode(hidmode, biosmode string) (string, error) {
++func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 	h := GetHid()
+ 	h.Lock()
+ 	h.CloseNoLock()
+@@ -286,8 +295,7 @@ func setHidMode(hidmode, biosmode string) (string, error) {
+ 		flag = "1"
+ 	}
+ 	wowFlag := "1"
+-	wowDisabled, _ := isFuncExist(NoWowFile)
+-	if wowDisabled {
++	if wowmode == ModeNoWoW {
+ 		wowFlag = "0"
+ 	}
+ 
+@@ -564,6 +572,37 @@ func getBiosMode() (string, error) {
+ 	return mode, nil
+ }
+ 
++func getWoWMode() (string, error) {
++	hidFunction := fmt.Sprintf("%s/%s", HidConfPath, "hid.GS0")
++	hidWakeOnWr := fmt.Sprintf("%s/wakeup_on_write", hidFunction)
++	hidFuncOn, _ := isFuncExist(hidFunction)
++	nowowboot, _ := isFuncExist(NoWowFile)
++
++	// hid is disabled
++	if (!hidFuncOn) {
++		if !nowowboot {
++			return wowMap["1"], nil
++		} else {
++			return wowMap["0"], nil
++		}
++	}
++
++	data, err := os.ReadFile(hidWakeOnWr)
++	if err != nil {
++		log.Errorf("failed to read %s: %s", hidWakeOnWr, err)
++		return "", err
++	}
++
++	key := strings.TrimSpace(string(data))
++	mode, ok := wowMap[key]
++	if !ok {
++		log.Errorf("invalid wow flag: %s", key)
++		return "", errors.New("invalid wow flag")
++	}
++
++	return mode, nil
++}
++
+ func setOtgRole(devicemode bool) (string, error) {
+ 	isCviUsb, _ := isFuncExist(CviUsbOtgRole)
+ 
+diff --git a/server/service/hid/wow.go b/server/service/hid/wow.go
+new file mode 100644
+index 0000000..a202639
+--- /dev/null
++++ b/server/service/hid/wow.go
+@@ -0,0 +1,69 @@
++package hid
++
++import (
++	"NanoKVM-Server/proto"
++	"os"
++
++	"github.com/gin-gonic/gin"
++	log "github.com/sirupsen/logrus"
++)
++
++func (s *Service) GetWoWMode(c *gin.Context) {
++	var rsp proto.Response
++
++	mode, err := getWoWMode()
++	if err != nil {
++		rsp.ErrRsp(c, -1, "get HID Wake on Write mode failed")
++		return
++	}
++
++	rsp.OkRspWithData(c, &proto.GetWoWModeRsp{
++		Mode: mode,
++	})
++	log.Debugf("get hid wow mode: %s", mode)
++}
++
++func (s *Service) SetWoWMode(c *gin.Context) {
++	var req proto.SetWoWModeReq
++	var rsp proto.Response
++
++	if err := proto.ParseFormRequest(c, &req); err != nil {
++		rsp.ErrRsp(c, -1, "invalid arguments")
++		return
++	}
++	if req.Mode != ModeNoWoW && req.Mode != ModeHidWoW {
++		rsp.ErrRsp(c, -2, "invalid arguments")
++		return
++	}
++
++	if mode, _ := getWoWMode(); req.Mode == mode {
++		rsp.OkRsp(c)
++		return
++	}
++
++	nowowboot, _ := isFuncExist(NoWowFile)
++	if !nowowboot && req.Mode != ModeHidWoW {
++		if err := os.WriteFile(NoWowFile, []byte("\n"), 0o666); err != nil {
++			log.Errorf("write wow file failed: %s", err)
++			rsp.ErrRsp(c, -2, "write wow file failed")
++			return
++		}
++	} else if nowowboot && req.Mode == ModeHidWoW {
++		if err := os.Remove(NoWowFile); err != nil {
++			log.Errorf("remove wow file failed: %s", err)
++			rsp.ErrRsp(c, -2, "remove wow file failed")
++			return
++		}
++	}
++
++	hidmode, _ := getHidMode()
++	biosmode, _ := getBiosMode();
++
++	msg, err := setHidMode(hidmode, biosmode, req.Mode)
++	if err != nil {
++		rsp.ErrRsp(c, -2, msg)
++		return
++	}
++
++	rsp.OkRsp(c)
++}
+-- 
+2.34.1
+
