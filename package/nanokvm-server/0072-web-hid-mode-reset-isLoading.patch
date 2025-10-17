@@ -1,0 +1,24 @@
+From 7bbbe3aede2dedfddc48467ea97d3726c3017930 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Fri, 17 Oct 2025 17:04:38 +0200
+Subject: [PATCH] web: hid-mode: reset isLoading
+
+---
+ web/src/pages/desktop/menu/mouse/hid-mode.tsx | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/web/src/pages/desktop/menu/mouse/hid-mode.tsx b/web/src/pages/desktop/menu/mouse/hid-mode.tsx
+index 60f9708..43f5bbb 100644
+--- a/web/src/pages/desktop/menu/mouse/hid-mode.tsx
++++ b/web/src/pages/desktop/menu/mouse/hid-mode.tsx
+@@ -137,6 +137,7 @@ export const HidMode = () => {
+     if (modal) {
+       setToggleBIOS(biosBool());
+       setToggleWoW(wowBool());
++      setIsLoading(false);
+     }
+     setIsModalOpen(modal);
+   }
+-- 
+2.34.1
+
