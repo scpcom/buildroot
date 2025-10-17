@@ -1,0 +1,39 @@
+From fc9fe4b00d7018c1dc30e272642f01e7941f6a82 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Fri, 17 Oct 2025 04:36:05 +0200
+Subject: [PATCH] web: hid-mode: set reload timer to 5s
+
+---
+ web/src/pages/desktop/menu/mouse/bios-mode.tsx | 2 +-
+ web/src/pages/desktop/menu/mouse/hid-mode.tsx  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/web/src/pages/desktop/menu/mouse/bios-mode.tsx b/web/src/pages/desktop/menu/mouse/bios-mode.tsx
+index a1c164d..97be78d 100644
+--- a/web/src/pages/desktop/menu/mouse/bios-mode.tsx
++++ b/web/src/pages/desktop/menu/mouse/bios-mode.tsx
+@@ -40,7 +40,7 @@ export const BiosMode = () => {
+ 
+     const timeoutId = setTimeout(() => {
+       window.location.reload();
+-    }, 30000);
++    }, 5000);
+ 
+     const mode = biosMode === 'normal' ? 'bios' : 'normal';
+ 
+diff --git a/web/src/pages/desktop/menu/mouse/hid-mode.tsx b/web/src/pages/desktop/menu/mouse/hid-mode.tsx
+index 728541e..797225b 100644
+--- a/web/src/pages/desktop/menu/mouse/hid-mode.tsx
++++ b/web/src/pages/desktop/menu/mouse/hid-mode.tsx
+@@ -59,7 +59,7 @@ export const HidMode = () => {
+ 
+     const timeoutId = setTimeout(() => {
+       window.location.reload();
+-    }, 30000);
++    }, 5000);
+ 
+     const mode = toggleMode;
+ 
+-- 
+2.34.1
+
