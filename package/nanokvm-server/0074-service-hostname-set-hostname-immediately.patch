@@ -1,0 +1,33 @@
+From 09b854244907a16c4e8153c65bb3046b908e10aa Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Thu, 23 Oct 2025 00:32:17 +0200
+Subject: [PATCH] service: hostname: set hostname immediately
+
+---
+ server/service/vm/hostname.go | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/server/service/vm/hostname.go b/server/service/vm/hostname.go
+index 30af41a..d1531e9 100644
+--- a/server/service/vm/hostname.go
++++ b/server/service/vm/hostname.go
+@@ -3,6 +3,7 @@ package vm
+ import (
+ 	"fmt"
+ 	"os"
++	"os/exec"
+ 	"strings"
+ 
+ 	"NanoKVM-Server/proto"
+@@ -63,6 +63,8 @@ func (s *Service) SetHostname(c *gin.Context) {
+ 
+ 	rsp.OkRsp(c)
+ 	log.Debugf("set Hostname: %s", req.Hostname)
++
++	_ = exec.Command("hostname", "-F", EtcHostname).Run()
+ }
+ 
+ func (s *Service) GetHostname(c *gin.Context) {
+-- 
+2.34.1
+
