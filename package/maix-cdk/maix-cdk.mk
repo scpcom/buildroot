@@ -172,6 +172,13 @@ define MAIX_CDK_BUILD_CMDS
 	sed -i 's|set.$${python} python3 |set($${python} '$(HOST_DIR)/bin/python3' |g' $(@D)/tools/cmake/*.cmake
 	[ "X$(BR2_TOOLCHAIN_BUILDROOT)" != "Xy" ] || sed -i /'^    $${strip_cmd}'/d $(@D)/tools/cmake/gen_binary.cmake
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES)" = "Xy" -a "$(MAIX_CDK_OPENCV_VER)-$(MAIX_CDK_TOOLCHAIN_ARCH)-$(MAIX_CDK_TOOLCHAIN_LIBC)" != "$(OPENCV4_VERSION)-riscv64-musl" ]; then \
+		for j in libbrotlicommon libbrotlidec libdrm libexpat libfontconfig libfreetype libicudata libicuuc libicui18n ; do \
+		for k in $(TARGET_DIR)/usr/lib/$${j}.so ; do \
+			l=`basename $$k` ; \
+			[ -e $$k ] || continue ; \
+			sed -i 's|                            $${src_path}/lib/libswscale.so|                            $${src_path}/lib/libswscale.so\n                            $${src_path}/lib/'$${l}'|g' $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
+		done ; \
+		done ; \
 		for j in libtbb libjpeg libsharpyuv libwebp libpng16 libtiff ; do \
 		for k in $(TARGET_DIR)/usr/lib/$${j}.so.* ; do \
 			l=`basename $$k` ; \
