@@ -1,0 +1,94 @@
+From cc4517b36ff19c7d1dea3d69d7346d28aca195b1 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 26 Oct 2025 03:45:16 +0100
+Subject: [PATCH] kvm_system: add option --oled-show-string
+
+---
+ kvmapp/system/init.d/S15kvmhwd              |  1 +
+ support/sg2002/kvm_system/main/src/main.cpp | 44 +++++++++++++++++++++
+ 2 files changed, 45 insertions(+)
+
+diff --git a/kvmapp/system/init.d/S15kvmhwd b/kvmapp/system/init.d/S15kvmhwd
+index e2e2575..ce5b6a2 100755
+--- a/kvmapp/system/init.d/S15kvmhwd
++++ b/kvmapp/system/init.d/S15kvmhwd
+@@ -219,6 +219,7 @@ case "$1" in
+   start)
+     kvm_hw_detect
+     kvm_hw_init
++    /kvmapp/kvm_system/kvm_system --oled-show-string "Booting"
+   ;;
+   re-detect)
+     rm /etc/kvm/hw
+diff --git a/support/sg2002/kvm_system/main/src/main.cpp b/support/sg2002/kvm_system/main/src/main.cpp
+index 0e4f69f..031c42b 100644
+--- a/support/sg2002/kvm_system/main/src/main.cpp
++++ b/support/sg2002/kvm_system/main/src/main.cpp
+@@ -172,8 +172,50 @@ void* thread_sys_handle(void * arg)
+ 	kvm_sys_state.sys_thread_running = 0;
+ }
+ 
++void oled_show_string(char* str)
++{
++	OLED_state = oled_exist();
++	if(OLED_state){
++		printf("oled exist\r\n");
++		system("touch /etc/kvm/oled_exist");
++	} else {
++		printf("oled not exist\r\n");
++		system("rm /etc/kvm/oled_exist");
++		return;
++	}
++
++	OLED_Init();
++	OLED_ColorTurn(0);              //0正常显示 1 反色显示
++	OLED_DisplayTurn(0);    //0正常显示 1 屏幕翻转显示
++	OLED_Clear();
++
++	time::sleep_ms(OLED_DELAY);
++
++	if(kvm_hw_ver != 2){
++		OLED_Clear();
++		// OLED_Revolve();
++		//OLED_ShowLogo();
++		//OLED_ShowSipeedLogo();
++	} else {
++		OLED_Revolve();
++		//OLED_Showline_1();
++		//OLED_ShowSipeedLogo();
++	}
++
++	printf("OLED_ShowString(%s)\n", str);
++	OLED_ShowString(0, 1, str, 16);
++
++	time::sleep_ms(OLED_DELAY);
++}
++
+ int main(int argc, char* argv[])
+ {
++    if (argc > 2 && !strcmp(argv[1], "--oled-show-string")) {
++	oled_show_string(argv[2]);
++
++	return 0;
++    }
++
+     // Catch SIGINT signal(e.g. Ctrl + C), and set exit flag to true.
+     signal(SIGINT, [](int sig){ 
+ 	kvm_sys_state.oled_thread_running = 0;
+@@ -189,11 +231,13 @@ int main(int argc, char* argv[])
+ 
+ 	// Execute only when it's a new image
+ 	if(access("/kvmapp/kvm_new_img", F_OK) == 0){
++		oled_show_string("Update");
+ 		new_img_init();
+ 	}
+ 
+ 	// Execute only when it's a new app
+ 	if(access("/kvmapp/kvm_new_app", F_OK) == 0){
++		oled_show_string("Update");
+ 		new_app_init();
+ 	}
+ 
+-- 
+2.34.1
+
