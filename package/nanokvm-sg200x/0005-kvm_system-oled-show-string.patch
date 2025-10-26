@@ -1,0 +1,24 @@
+From ea7e9ef812d605ee92c4b66cf3167b363f6b0684 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 26 Oct 2025 03:42:05 +0100
+Subject: [PATCH] kvm_system: add option --oled-show-string
+
+---
+ kvmapp/system/init.d/S15kvmhwd | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/kvmapp/system/init.d/S15kvmhwd b/kvmapp/system/init.d/S15kvmhwd
+index e2e2575..ce5b6a2 100755
+--- a/kvmapp/system/init.d/S15kvmhwd
++++ b/kvmapp/system/init.d/S15kvmhwd
+@@ -219,6 +219,7 @@ case "$1" in
+   start)
+     kvm_hw_detect
+     kvm_hw_init
++    /kvmapp/kvm_system/kvm_system --oled-show-string "Booting"
+   ;;
+   re-detect)
+     rm /etc/kvm/hw
+-- 
+2.34.1
+
