@@ -1,0 +1,48 @@
+From 5fbf8307e1b1427f4c6acfab1f80c30de333223e Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sat, 1 Nov 2025 06:41:59 +0100
+Subject: [PATCH] nanokvm: create /boot/kvm
+
+---
+ kvmapp/system/init.d/S15kvmhwd | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/kvmapp/system/init.d/S15kvmhwd b/kvmapp/system/init.d/S15kvmhwd
+index 1452922..59ec676 100755
+--- a/kvmapp/system/init.d/S15kvmhwd
++++ b/kvmapp/system/init.d/S15kvmhwd
+@@ -188,16 +188,23 @@ kvm_hw_init(){
+     then
+         echo "hw = alpha!"
+         init_alpha_hw
++	[ -e /boot/kvm ] || echo "hw=alpha" > /boot/kvm
+     fi
+     if [ `grep -c "beta" $FIND_FILE` -ne '0' ]
+     then
+         echo "hw = beta!"
+         init_beta_pcie_hw
++	[ -e /boot/kvm ] || echo "hw=beta" > /boot/kvm
+     fi
+     if [ `grep -c "pcie" $FIND_FILE` -ne '0' ]
+     then
+         echo "hw = pcie!"
+         init_beta_pcie_hw
++	[ -e /boot/kvm ] || echo "hw=pcie" > /boot/kvm
++    fi
++    if [ -e /boot/kvm -a -e /etc/kvm/oled_exist ]
++    then
++        grep -q '^oled=' /boot/kvm || echo 'oled=exists' >> /boot/kvm
+     fi
+ }
+ 
+@@ -224,6 +231,7 @@ case "$1" in
+     /kvmapp/kvm_system/kvm_system --oled-show-string "Booting"
+   ;;
+   re-detect)
++    rm -f /boot/kvm
+     rm /etc/kvm/hw
+     kvm_hw_detect
+     kvm_hw_init
+-- 
+2.34.1
+
