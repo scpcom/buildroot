@@ -8,6 +8,9 @@ NANOKVM_SERVER_VERSION = 815770fabf94160d07452d2cd39a44a7bb51d201
 NANOKVM_SERVER_SITE = $(call github,sipeed,NanoKVM,$(NANOKVM_SERVER_VERSION))
 NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm
 
+NANOKVM_SERVER_GO_VENDOR_REF = 3031450a146ba186b5e833cd102c0ddab21db235
+NANOKVM_SERVER_GO_VENDOR_URL = https://github.com/scpcom/nanokvm-server-vendor
+
 NANOKVM_SERVER_DEPENDENCIES = host-go host-nodejs host-python3
 
 ifeq ($(BR2_PACKAGE_MAIX_CDK),y)
@@ -179,8 +182,10 @@ define NANOKVM_SERVER_BUILD_CMDS
 		sed -i s/'^CC ='/'#CC ='/g Makefile ; \
 		$(TARGET_MAKE_ENV) make CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS) $(TARGET_LDFLAGS)" ; \
 	fi
+	cd $(@D)/$(NANOKVM_SERVER_GOMOD) && git clone --depth 1 $(NANOKVM_SERVER_GO_VENDOR_URL) vendor
+	cd $(@D)/$(NANOKVM_SERVER_GOMOD)/vendor && git checkout $(NANOKVM_SERVER_GO_VENDOR_REF)
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
-	GOPROXY=direct GOSUMDB="sum.golang.org" $(GO_BIN) mod tidy
+	[ -e $(@D)/$(NANOKVM_SERVER_GOMOD)/vendor ] || GOPROXY=direct GOSUMDB="sum.golang.org" $(GO_BIN) mod tidy
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
 	sed -i 's|-L../dl_lib -lkvm|-L../dl_lib -L$(TARGET_DIR)/usr/lib -lkvm|g' common/cgo.go ; \
 	sed -i s/' -lkvm$$'/' -lkvm -lmaixcam_lib -latomic -lae -laf -lawb -lcvi_bin -lcvi_bin_isp -lini -lisp -lisp_algo -lgdc -lrgn -lsys -lvdec -lvenc -lvi -lvo -lvpss'/g common/cgo.go
@@ -189,7 +194,7 @@ define NANOKVM_SERVER_BUILD_CMDS
 		sed -i s/'maixcam_lib'/'kvm_mmf'/g common/cgo.go ; \
 	fi
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
-	CGO_ENABLED=1 $(NANOKVM_SERVER_GO_ENV) $(GO_BIN) build -x -ldflags="-extldflags '-Wl,-rpath,\$$ORIGIN/dl_lib'"
+	CGO_ENABLED=1 $(NANOKVM_SERVER_GO_ENV) $(GO_BIN) build -mod vendor -x -ldflags="-extldflags '-Wl,-rpath,\$$ORIGIN/dl_lib'"
 	cd $(@D)/web ; \
 	$(HOST_COREPACK) install -g pnpm@$(NANOKVM_SERVER_PNPM_VERSION)+sha1.$(NANOKVM_SERVER_PNPM_SHA_SUM) ; \
 	$(HOST_COREPACK) use pnpm@$(NANOKVM_SERVER_PNPM_VERSION)+sha1.$(NANOKVM_SERVER_PNPM_SHA_SUM) ; \
