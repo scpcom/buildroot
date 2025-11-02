@@ -1,0 +1,24 @@
+From 75e2005285699b734b23af84b8e5c24a19e875e7 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 2 Nov 2025 21:21:13 +0100
+Subject: [PATCH] nanokvm: storage: set inquiry string
+
+---
+ kvmapp/system/init.d/S03usbdev  |  1 +
+ 1 files changed, 17 insertions(+)
+
+diff --git a/kvmapp/system/init.d/S03usbdev b/kvmapp/system/init.d/S03usbdev
+index 3536cf5..f6cd9cf 100755
+--- a/kvmapp/system/init.d/S03usbdev
++++ b/kvmapp/system/init.d/S03usbdev
+@@ -104,6 +104,7 @@ start_usb_dev(){
+                     echo 1 > functions/mass_storage.disk0/lun.0/ro
+                     echo 0 > functions/mass_storage.disk0/lun.0/cdrom
+             fi
++            echo "NanoKVM USB Mass Storage0520" > functions/mass_storage.disk0/lun.0/inquiry_string
+             disk=$(cat /boot/usb.disk0)
+             if [ -z "${disk}" ]
+             then
+-- 
+2.34.1
+
