@@ -13,7 +13,7 @@ new file mode 100755
 index 0000000..723b1d7
 --- /dev/null
 +++ b/distapps.sh
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,44 @@
 +#!/bin/sh
 +m=`dirname $0`
 +t=${m}/dist
@@ -21,9 +21,11 @@ index 0000000..723b1d7
 +mkdir -p ${t}
 +t=${t}/maixapp
 +mkdir ${t}
++mkdir ${t}/apps
 +mkdir ${t}/lib
 +mkdir ${t}/tmp
 +l=${t}/lib
++t=${t}/apps
 +echo "projects:"
 +for d in $m/projects/app_* ; do
 +  a=`dirname $d`
@@ -37,7 +39,7 @@ index 0000000..723b1d7
 +    if [ -d ${t}/${b}/dl_lib ]; then
 +      rsync -avpPxH ${a}/apps/${b}/dl_lib/ ${l}/
 +      rm -rf ${t}/${b}/dl_lib/
-+      ln -s ../lib ${t}/${b}/dl_lib
++      ln -s ../../lib ${t}/${b}/dl_lib
 +    fi
 +  fi
 +done
@@ -52,7 +54,7 @@ index 0000000..723b1d7
 +    if [ -d ${t}/${b}/dl_lib ]; then
 +      rsync -avpPxH ${d}/dist/${b}_release/dl_lib/ ${l}/
 +      rm -rf ${t}/${b}/dl_lib/
-+      ln -s ../lib ${t}/${b}/dl_lib
++      ln -s ../../lib ${t}/${b}/dl_lib
 +   fi
 +  fi
 +done
