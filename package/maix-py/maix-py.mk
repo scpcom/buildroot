@@ -49,6 +49,7 @@ define MAIX_PY_INSTALL_TARGET_CMDS
 	if [ -e ${@D}/dist/maixapp ]; then \
 		mkdir -pv $(TARGET_DIR)/maixapp/ ; \
 		rsync -r --verbose --links --safe-links --hard-links ${@D}/dist/maixapp/ $(TARGET_DIR)/maixapp/ ; \
+		PATH=$(BR_PATH) $(HOST_DIR)/bin/python3 ${@D}/tools/gen_app_info.py $(TARGET_DIR)/maixapp/apps ; \
 	elif [ -e  ${@D}/$(MAIX_PY_MAIXCAM_DIST) ]; then \
 		mkdir -pv $(TARGET_DIR)/maixapp/apps/$(MAIX_PY_SAMPLE)/ ; \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/$(MAIX_PY_MAIXCAM_DIST)/ $(TARGET_DIR)/maixapp/apps/$(MAIX_PY_SAMPLE)/ ; \
