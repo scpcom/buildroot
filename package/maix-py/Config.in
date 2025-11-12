@@ -1,0 +1,23 @@
+config BR2_PACKAGE_MAIX_PY
+	bool "maix-py"
+	depends on BR2_PACKAGE_MAIX_CDK
+	select BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES
+	select BR2_PACKAGE_MAIX_CDK_ALL_PROJECTS
+	help
+	  MaixPy.
+
+if BR2_PACKAGE_MAIX_PY
+
+config BR2_PACKAGE_MAIX_PY_ALL_PROJECTS
+	bool "All MaixPy projects"
+	default y
+	help
+	  Build all MaixPy projects.
+
+config BR2_PACKAGE_MAIX_PY_ALL_EXAMPLES
+	bool "All MaixPy examples"
+	default n
+	help
+	  Build all MaixPy examples.
+
+endif

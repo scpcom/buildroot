@@ -1,0 +1,55 @@
+From 41f213a4fff2ea878ee888c99d38ed47cbe93476 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 27 Oct 2024 07:24:26 +0100
+Subject: [PATCH] add distapps.sh
+
+---
+ distapps.sh | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+ create mode 100755 distapps.sh
+
+diff --git a/distapps.sh b/distapps.sh
+new file mode 100755
+index 0000000..723b1d7
+--- /dev/null
++++ b/distapps.sh
+@@ -0,0 +1,36 @@
++#!/bin/sh
++m=`dirname $0`
++t=${m}/dist
++rm -rf ${t}/maixapp/
++mkdir -p ${t}
++t=${t}/maixapp
++mkdir ${t}
++mkdir ${t}/apps
++mkdir ${t}/tmp
++t=${t}/apps
++echo "projects:"
++for d in $m/projects/app_* ; do
++  a=`dirname $d`
++  b=`basename $d | cut -d '_' -f 2-`
++  c=main.py
++  i=`cat $d/app.yaml | grep '^id: ' | cut -d ' ' -f 2`
++  [  -e ${a}/apps/${b}/${c} ] || b=$i
++  #if [ ! -e ${d}/dist/${b}_release/${b} ]; then
++  if [ -e ${a}/apps/${b}/${c} ]; then
++    echo $b
++    mkdir ${t}/${b}
++    rsync -avpPxH ${a}/apps/${b}/ ${t}/${b}/
++    chmod +x ${t}/${b}/${c}
++  fi
++done
++echo "examples:"
++for d in $m/examples/* ; do
++  b=`basename $d`
++  c=main.py
++  if [ -e ${d}/dist/${b}_release/${c} ]; then
++    echo $b
++    mkdir ${t}/${b}
++    rsync -avpPxH ${d}/dist/${b}_release/ ${t}/${b}/
++    chmod +x ${t}/${b}/${c}
++  fi
++done
+-- 
+2.34.1
+
