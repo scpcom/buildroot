@@ -11,11 +11,12 @@ diff --git a/projects/app_camera/main/app/app.cpp b/projects/app_camera/main/app
 index 93c83b8..76447ec 100644
 --- a/projects/app_camera/main/app/app.cpp
 +++ b/projects/app_camera/main/app/app.cpp
-@@ -1,7 +1,8 @@
+@@ -1,7 +1,9 @@
  #include "lvgl.h"
 -#include "app.hpp"
  #include "stdio.h"
  #include "unistd.h"
++#include "maix_err.hpp"
 +#include "maix_ffmpeg.hpp"
 +#include "app.hpp"
  #include "maix_basic.hpp"
@@ -27,8 +28,8 @@ index 93c83b8..76447ec 100644
  #include "maix_vision.hpp"
 -#include "maix_ffmpeg.hpp"
  #include "region.hpp"
- #include "sophgo_middleware.hpp"
  #include <sys/ioctl.h>
+ #include <sys/types.h>
 -- 
 2.34.1
 

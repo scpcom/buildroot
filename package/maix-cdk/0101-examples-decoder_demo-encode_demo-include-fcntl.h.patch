@@ -13,7 +13,7 @@ index 6c5b551..fe7f011 100644
 --- a/examples/decoder_demo/main/src/main.cpp
 +++ b/examples/decoder_demo/main/src/main.cpp
 @@ -4,6 +4,7 @@
- #include "sophgo_middleware.hpp"
+ #include "main.h"
  using namespace maix;
  extern "C" {
 +#include <fcntl.h>
@@ -25,7 +25,7 @@ index decb7b5..ed6fda0 100644
 --- a/examples/encode_demo/main/src/main.cpp
 +++ b/examples/encode_demo/main/src/main.cpp
 @@ -10,6 +10,7 @@
- using namespace maix;
+ #endif
  
  extern "C" {
 +#include <fcntl.h>

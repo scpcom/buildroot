@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-MAIX_CDK_VERSION = da86eddb2c9551faa0cfd248447c53072e35555e
+MAIX_CDK_VERSION = b29c951647df74e4efa55fd4454efb37e4554be0
 MAIX_CDK_SITE = $(call github,sipeed,MaixCDK,$(MAIX_CDK_VERSION))
 
 MAIX_CDK_DL_PKGS_REF = 1c60539477058af78a0d00cf6ad112cd57bbbe31
@@ -26,6 +26,7 @@ MAIX_CDK_DEPENDENCIES +=\
 	harfbuzz \
 	libxml2 \
 	opencv4 \
+	python3 \
 	xz
 endif
 
@@ -125,15 +126,25 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		sed -i 's|^        $${middleware_src_path}/v2/component/panel/sg200x|        $${middleware_src_path}/v2/component/isp/common\n        $${middleware_src_path}/v2/component/panel/sg200x|g' $(@D)/components/maixcam_lib/CMakeLists.txt ; \
 		sed -i 's|^    append_srcs_dir(middleware_src_dir  $${middleware_src_path}/v2/sample/common|    append_srcs_dir(middleware_src_dir  $${middleware_src_path}/v2/component/isp/common\n                                        $${middleware_src_path}/v2/sample/common|g' $(@D)/components/maixcam_lib/CMakeLists.txt ; \
 	fi
+	if [ -e ${@D}/components/maixcam_lib/lib_maixcam -a ! -e ${@D}/components/maixcam_lib/lib ]; then \
+		ln -s lib_maixcam ${@D}/components/maixcam_lib/lib ; \
+	fi
 	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) ]; then \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) ${@D}/components/maixcam_lib/lib/ ; \
 	fi
+	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) -a -e ${@D}/components/maixcam_lib/lib_maixcam ]; then \
+		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) ${@D}/components/maixcam_lib/lib_maixcam/ ; \
+	fi
 	@$(eval OPENCV4_SUFFIX=$(shell echo "$(OPENCV4_VERSION)" | cut -d '.' -f 1-2 | tr -d '.'))
+	@$(eval PYVER_MAJOR=$(shell echo $(PYTHON3_VERSION) | cut -d '.' -f 1))
+	@$(eval PYVER_MINOR=$(shell echo $(PYTHON3_VERSION) | cut -d '.' -f 2))
+	@$(eval PYVER_PATCH=$(shell echo $(PYTHON3_VERSION) | cut -d '.' -f 3))
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES)" = "Xy" -a "$(MAIX_CDK_OPENCV_VER)-$(MAIX_CDK_TOOLCHAIN_ARCH)-$(MAIX_CDK_TOOLCHAIN_LIBC)" != "$(OPENCV4_VERSION)-riscv64-musl" ]; then \
 		sed -i 's|set(alsa_lib_dir "lib")|set(alsa_lib_dir "$(TARGET_DIR)/usr/lib")|g' $(@D)/components/3rd_party/alsa_lib/CMakeLists.txt ; \
 		sed -i 's|set(alsa_lib_include_dir "include")|set(alsa_lib_include_dir "$(TARGET_DIR)/usr/include")|g' $(@D)/components/3rd_party/alsa_lib/CMakeLists.txt ; \
 		sed -i 's|set(src_path "$${ffmpeg_unzip_path}/ffmpeg")|set(src_path "$(TARGET_DIR)/usr")|g' $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		[ -e $(TARGET_DIR)/usr/lib/libavresample.so ] || sed -i /libavresample.so/d $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
+		sed -i 's|#.*                            $${src_path}/lib/libswscale.so|#                            $${non_path}/lib/libswscale.so|g' $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		sed -i 's|                            $${src_path}/lib/libswscale.so|                            $${src_path}/lib/libswscale.so\n                            $${src_path}/lib/liblzma.so\n                            $${src_path}/lib/libxml2.so\n                            $${src_path}/lib/libz.so\n                            $${src_path}/lib/libbz2.so\n                            $${src_path}/lib/libssl.so\n                            $${src_path}/lib/libcrypto.so|g' $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		sed -i s/'# list.APPEND ADD_REQUIREMENTS.$$'/'list(APPEND ADD_REQUIREMENTS alsa_lib)'/g $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		rm -f $(@D)/components/3rd_party/FFmpeg/component.py ; \
@@ -149,7 +160,14 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		rm -f $(@D)/components/3rd_party/opencv/component.py ; \
 		mkdir -pv $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links --exclude=build --exclude=test $(@D)/../harfbuzz-$(HARFBUZZ_VERSION)/ $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
+		sed -i 's|$${DL_EXTRACTED_PATH}/python3/python3_lib_maixcam_musl_3.11.6|$(TARGET_DIR)/usr|g' $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
+		sed -i s/'CONFIG_PYTHON_VERSION_MAJOR "3"'/'CONFIG_PYTHON_VERSION_MAJOR "$(PYVER_MAJOR)"'/g $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
+		sed -i s/'CONFIG_PYTHON_VERSION_MINOR "11"'/'CONFIG_PYTHON_VERSION_MINOR "$(PYVER_MINOR)"'/g $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
+		sed -i s/'CONFIG_PYTHON_VERSION_PATCH "6"'/'CONFIG_PYTHON_VERSION_PATCH "$(PYVER_PATCH)"'/g $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
+		sed -i s/'3.11.6'/'$(PYTHON3_VERSION)'/g $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
+		rm -f $(@D)/components/3rd_party/python3/component.py ; \
 		sed -i /'list.APPEND ADD_REQUIREMENTS cvi_tpu.'/d $(@D)/components/maixcam_lib/CMakeLists.txt ; \
+		sed -i /'"cvi_tpu",'/d $(@D)/components/maixcam_lib/component.py ; \
 	fi
 endef
 MAIX_CDK_POST_EXTRACT_HOOKS += MAIX_CDK_POST_EXTRACT_FIXUP
@@ -172,6 +190,7 @@ define MAIX_CDK_BUILD_CMDS
 	sed -i 's|set.$${python} python3 |set($${python} '$(HOST_DIR)/bin/python3' |g' $(@D)/tools/cmake/*.cmake
 	[ "X$(BR2_TOOLCHAIN_BUILDROOT)" != "Xy" ] || sed -i /'^    $${strip_cmd}'/d $(@D)/tools/cmake/gen_binary.cmake
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES)" = "Xy" -a "$(MAIX_CDK_OPENCV_VER)-$(MAIX_CDK_TOOLCHAIN_ARCH)-$(MAIX_CDK_TOOLCHAIN_LIBC)" != "$(OPENCV4_VERSION)-riscv64-musl" ]; then \
+		sed -i 's|#.*                            $${src_path}/lib/libswscale.so|#                            $${non_path}/lib/libswscale.so|g' $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		for j in libbrotlicommon libbrotlidec libdrm libexpat libfontconfig libfreetype libicudata libicuuc libicui18n ; do \
 		for k in $(TARGET_DIR)/usr/lib/$${j}.so ; do \
 			l=`basename $$k` ; \
@@ -189,6 +208,10 @@ define MAIX_CDK_BUILD_CMDS
 		done ; \
 	fi
 	rm -rf $(@D)/components/3rd_party/ax620e_msp/
+	rm -rf $(@D)/components/3rd_party/cvi_tpu/
+	rm -rf $(@D)/components/llm/
+	rm -rf $(@D)/components/nn/
+	rm -rf $(@D)/components/vision_extra/
 	cd $(@D)/ ; \
 	$(HOST_DIR)/bin/python3 -m pip install -r requirements.txt
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES)" = "Xy" ]; then \
@@ -201,6 +224,7 @@ define MAIX_CDK_BUILD_CMDS
 	rm -rf $(@D)/projects/app_speech/
 	if [ -e $(@D)/projects/app_uvc_camera/main/CMakeLists.txt ]; then \
 		sed -i s/'basic nn vision'/'basic vision'/g $(@D)/projects/app_uvc_camera/main/CMakeLists.txt ; \
+		sed -i s/'comm nn vision'/'comm vision'/g $(@D)/projects/app_uvc_camera/main/CMakeLists.txt ; \
 	fi
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_PROJECTS)" = "Xy" -a -e $(@D)/distapps.sh -a -e $(@D)/projects/build_all.sh ]; then \
 		chmod +x $(@D)/projects/build_all.sh ; \

@@ -42,9 +42,10 @@ index 9f82334..c1e2f4c 100644
   * @update 2023.9.8: Add framework, create this file.
   */
  
++#include "maix_err.hpp"
 +#include "maix_ffmpeg.hpp"
  #include "maix_rtsp.hpp"
- #include "maix_err.hpp"
+-#include "maix_err.hpp"
  #include "maix_basic.hpp"
  #include "maix_audio.hpp"
  #include "maix_video.hpp"
