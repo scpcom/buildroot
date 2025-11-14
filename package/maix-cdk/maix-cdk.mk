@@ -167,6 +167,8 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		sed -i s/'CONFIG_PYTHON_VERSION_PATCH "6"'/'CONFIG_PYTHON_VERSION_PATCH "$(PYVER_PATCH)"'/g $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
 		sed -i s/'3.11.6'/'$(PYTHON3_VERSION)'/g $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
 		rm -f $(@D)/components/3rd_party/python3/component.py ; \
+	fi
+	if [ "X$(BR2_PACKAGE_MAIX_CDK_NN_TPU)" != "Xy" ]; then \
 		sed -i /'list.APPEND ADD_REQUIREMENTS cvi_tpu.'/d $(@D)/components/maixcam_lib/CMakeLists.txt ; \
 		sed -i /'"cvi_tpu",'/d $(@D)/components/maixcam_lib/component.py ; \
 	fi
@@ -209,21 +211,25 @@ define MAIX_CDK_BUILD_CMDS
 		done ; \
 	fi
 	rm -rf $(@D)/components/3rd_party/ax620e_msp/
-	rm -rf $(@D)/components/3rd_party/cvi_tpu/
-	rm -rf $(@D)/components/llm/
-	rm -rf $(@D)/components/nn/
-	rm -rf $(@D)/components/vision_extra/
+	if [ "X$(BR2_PACKAGE_MAIX_CDK_NN_TPU)" != "Xy" ]; then \
+		rm -rf $(@D)/components/3rd_party/cvi_tpu/ ; \
+		rm -rf $(@D)/components/llm/ ; \
+		rm -rf $(@D)/components/nn/ ; \
+		rm -rf $(@D)/components/vision_extra/ ; \
+	fi
 	cd $(@D)/ ; \
 	$(HOST_DIR)/bin/python3 -m pip install -r requirements.txt
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES)" = "Xy" ]; then \
 		cd $(@D)/examples/$(MAIX_CDK_SAMPLE)/ ; \
 		PATH=$(BR_PATH) $(HOST_DIR)/bin/maixcdk build -p maixcam ; \
 	fi
-	rm -rf $(@D)/projects/app_classifier/
-	rm -rf $(@D)/projects/app_detector/
-	rm -rf $(@D)/projects/app_self_learn_tracker/
-	rm -rf $(@D)/projects/app_speech/
-	if [ -e $(@D)/projects/app_uvc_camera/main/CMakeLists.txt ]; then \
+	if [ ! -e $(@D)/components/nn ]; then \
+		rm -rf $(@D)/projects/app_classifier/ ; \
+		rm -rf $(@D)/projects/app_detector/ ; \
+		rm -rf $(@D)/projects/app_self_learn_tracker/ ; \
+		rm -rf $(@D)/projects/app_speech/ ; \
+	fi
+	if [ -e $(@D)/projects/app_uvc_camera/main/CMakeLists.txt -a ! -e $(@D)/components/nn ]; then \
 		sed -i s/'basic nn vision'/'basic vision'/g $(@D)/projects/app_uvc_camera/main/CMakeLists.txt ; \
 		sed -i s/'comm nn vision'/'comm vision'/g $(@D)/projects/app_uvc_camera/main/CMakeLists.txt ; \
 	fi
@@ -232,9 +238,11 @@ define MAIX_CDK_BUILD_CMDS
 		cd $(@D)/projects/ ; \
 		PATH=$(BR_PATH) ./build_all.sh ; \
 	fi
-	rm -rf $(@D)/examples/bytetrack_demo/
-	rm -rf $(@D)/examples/nn_*/
-	rm -rf $(@D)/examples/rtsp_yolo_demo/
+	if [ ! -e $(@D)/components/nn ]; then \
+		rm -rf $(@D)/examples/bytetrack_demo/ ; \
+		rm -rf $(@D)/examples/nn_*/ ; \
+		rm -rf $(@D)/examples/rtsp_yolo_demo/ ; \
+	fi
 	if [ -e $(@D)/examples/maix_bm8563/app.yaml ]; then \
 		sed -i s/bm8653/bm8563/g $(@D)/examples/maix_bm8563/app.yaml ; \
 	fi
