@@ -18,7 +18,7 @@ ALSA_LIB_CONF_OPTS = \
 	--with-pcm-plugins="$(call qstrip,$(BR2_PACKAGE_ALSA_LIB_PCM_PLUGINS))" \
 	--with-ctl-plugins="$(call qstrip,$(BR2_PACKAGE_ALSA_LIB_CTL_PLUGINS))"
 
-ifeq ($(BR2_TOOLCHAIN_USES_GLIBC),)
+ifeq ($(BR2_TOOLCHAIN_USES_GLIBC)$(BR2_TOOLCHAIN_USES_MUSL),)
 ALSA_LIB_CONF_OPTS += --without-versioned
 endif
 
