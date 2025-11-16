@@ -8,6 +8,16 @@ config BR2_PACKAGE_MAIX_CDK
 
 if BR2_PACKAGE_MAIX_CDK
 
+config BR2_PACKAGE_MAIX_CDK_MUSL_RISCV64
+	bool "SDK is musl_riscv64"
+	default y
+	depends on BR2_RISCV_64 && BR2_RISCV_ISA_RVI && BR2_RISCV_ISA_RVM && \
+			BR2_RISCV_ISA_RVA && BR2_RISCV_ISA_RVF && \
+			BR2_RISCV_ISA_RVD && BR2_RISCV_ISA_RVC && \
+			BR2_TOOLCHAIN_USES_MUSL
+	help
+	  SDK is musl_riscv64.
+
 config BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES
 	bool "All MaixCDK dependencies"
 	default y
@@ -35,5 +45,21 @@ config BR2_PACKAGE_MAIX_CDK_ALL_EXAMPLES
 	default n
 	help
 	  Build all MaixCDK examples.
+
+config BR2_PACKAGE_MAIX_CDK_KEEP_MAIXCAM_LIB
+	bool "Keep pre-built maixcam_lib"
+	default n
+	depends on BR2_PACKAGE_MAIX_CDK_MUSL_RISCV64
+	help
+	  Build with pre-built maixcam_lib.
+	  Uses closed-source libs.
+
+config BR2_PACKAGE_MAIX_CDK_NN_TPU
+	bool "Enable NN/TPU support"
+	default n
+	depends on BR2_PACKAGE_MAIX_CDK_MUSL_RISCV64
+	help
+	  Build with NN/TPU support.
+	  Uses closed-source libs.
 
 endif

@@ -129,10 +129,10 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 	if [ -e ${@D}/components/maixcam_lib/lib_maixcam -a ! -e ${@D}/components/maixcam_lib/lib ]; then \
 		ln -s lib_maixcam ${@D}/components/maixcam_lib/lib ; \
 	fi
-	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) ]; then \
+	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) -a "X$(BR2_PACKAGE_MAIX_CDK_KEEP_MAIXCAM_LIB)" != "Xy" ]; then \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) ${@D}/components/maixcam_lib/lib/ ; \
 	fi
-	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) -a -e ${@D}/components/maixcam_lib/lib_maixcam ]; then \
+	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) -a "X$(BR2_PACKAGE_MAIX_CDK_KEEP_MAIXCAM_LIB)" != "Xy" -a -e ${@D}/components/maixcam_lib/lib_maixcam ]; then \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) ${@D}/components/maixcam_lib/lib_maixcam/ ; \
 	fi
 	@$(eval OPENCV4_SUFFIX=$(shell echo "$(OPENCV4_VERSION)" | cut -d '.' -f 1-2 | tr -d '.'))
