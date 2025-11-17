@@ -201,7 +201,7 @@ define MAIX_CDK_BUILD_CMDS
 			sed -i 's|                            $${src_path}/lib/libswscale.so|                            $${src_path}/lib/libswscale.so\n                            $${src_path}/lib/'$${l}'|g' $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		done ; \
 		done ; \
-		for j in libtbb libjpeg libsharpyuv libwebp libpng16 libtiff ; do \
+		for j in libtbb libjpeg libsharpyuv libwebp libpng16 libtiff libz ; do \
 		for k in $(TARGET_DIR)/usr/lib/$${j}.so.* ; do \
 			l=`basename $$k` ; \
 			[ -e $$k ] || continue ; \
@@ -243,11 +243,46 @@ define MAIX_CDK_BUILD_CMDS
 		rm -rf $(@D)/examples/nn_*/ ; \
 		rm -rf $(@D)/examples/rtsp_yolo_demo/ ; \
 	fi
+	# maixcam2 only
+	rm -rf $(@D)/examples/nn_melotts/
+	rm -rf $(@D)/examples/nn_whisper/
+	if [ -e $(@D)/examples/demo_focus_stack/main/CMakeLists.txt ]; then \
+		if grep -q '^"focus-stack/src"' $(@D)/examples/demo_focus_stack/main/CMakeLists.txt ; then \
+			if [ ! -e $(@D)/examples/demo_focus_stack/main/focus-stack/src ]; then \
+				rm -rf $(@D)/examples/demo_focus_stack/ ; \
+			fi ; \
+		fi ; \
+	fi
+	if [ -e $(@D)/examples/image_method/main/CMakeLists.txt ]; then \
+		if grep -q '"ed_lib/ED_Lib' $(@D)/examples/image_method/main/CMakeLists.txt ; then \
+			if [ ! -e $(@D)/examples/image_method/main/ed_lib/ED_Lib ]; then \
+				rm -rf $(@D)/examples/image_method/ ; \
+			fi ; \
+		fi ; \
+	fi
+	if [ -e $(@D)/examples/maix_ntp/main/src/main.cpp ]; then \
+		if grep -q '^#include "maix_ntp.hpp"' $(@D)/examples/maix_ntp/main/src/main.cpp ; then \
+			rm -rf $(@D)/examples/maix_ntp/ ; \
+		fi ; \
+	fi
+	if [ ! -e $(@D)/examples/maixcdk-example/main/CMakeLists.txt ]; then \
+		rm -rf $(@D)/examples/maixcdk-example/ ; \
+	fi
+	if [ -e $(@D)/examples/video_record_mp4/main/src/main.cpp ]; then \
+		if grep -q 'v\.record_start' $(@D)/examples/video_record_mp4/main/src/main.cpp ; then \
+			rm -rf $(@D)/examples/video_record_mp4/ ; \
+		fi ; \
+	fi
 	if [ -e $(@D)/examples/maix_bm8563/app.yaml ]; then \
 		sed -i s/bm8653/bm8563/g $(@D)/examples/maix_bm8563/app.yaml ; \
 	fi
 	if [ -e $(@D)/examples/mlx90640/app.yaml ]; then \
 		sed -i s/mlx90640_$$/mlx90640/g $(@D)/examples/mlx90640/app.yaml ; \
+	fi
+	if [ -e $(@D)/examples/mlx90640/main/CMakeLists.txt -a -e $(@D)/components/ext_devs/ext_dev_mlx90640 ]; then \
+		if ! grep -q ext_dev_mlx90640 $(@D)/examples/mlx90640/main/CMakeLists.txt ; then \
+			sed -i s/'APPEND ADD_REQUIREMENTS basic ext_dev)'/'APPEND ADD_REQUIREMENTS basic ext_dev ext_dev_mlx90640)'/g $(@D)/examples/mlx90640/main/CMakeLists.txt ; \
+		fi ; \
 	fi
 	if [ -e $(@D)/examples/i18n/app.yaml ]; then \
 		if grep -q 'id: i18n_demo' $(@D)/examples/i18n/app.yaml ; then \
