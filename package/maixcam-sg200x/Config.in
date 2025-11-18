@@ -1,0 +1,5 @@
+config BR2_PACKAGE_MAIXCAM_SG200X
+	bool "maixcam-sg200x"
+	select BR2_PACKAGE_MAIX_PY
+	help
+	  maixcam apps for sg200x
