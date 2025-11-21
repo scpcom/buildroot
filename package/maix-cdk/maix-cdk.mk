@@ -184,7 +184,7 @@ define MAIX_CDK_BUILD_CMDS
 	sed -i s/'^    sha256sum: .*'/'    sha256sum:'/g $(@D)/platforms/maixcam.yaml
 	sed -i s/'^    filename: .*'/'    filename:'/g $(@D)/platforms/maixcam.yaml
 	sed -i s/'^    path: .*'/'    path:'/g $(@D)/platforms/maixcam.yaml
-	if [ "X$(MAIX_CDK_TOOLCHAIN_BIN)" = "X" ]; then \
+	if [ "X$(MAIX_CDK_TOOLCHAIN_BIN)" = "X"  -o ! -e "$(MAIX_CDK_TOOLCHAIN_BIN)" ]; then \
 		sed -i 's|^    bin_path: .*|    bin_path: '$(HOST_DIR)/bin'|g' $(@D)/platforms/maixcam.yaml ; \
 	else \
 		sed -i 's|^    bin_path: .*|    bin_path: '$(realpath $(MAIX_CDK_TOOLCHAIN_BIN))'|g' $(@D)/platforms/maixcam.yaml ; \
