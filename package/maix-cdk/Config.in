@@ -58,6 +58,7 @@ config BR2_PACKAGE_MAIX_CDK_NN_TPU
 	bool "Enable NN/TPU support"
 	default n
 	depends on BR2_PACKAGE_MAIX_CDK_MUSL_RISCV64
+	depends on BR2_PACKAGE_SOPHGO_LIBRARY
 	help
 	  Build with NN/TPU support.
 	  Uses closed-source libs.

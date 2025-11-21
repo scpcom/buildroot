@@ -30,6 +30,10 @@ MAIX_CDK_DEPENDENCIES +=\
 	xz
 endif
 
+ifeq ($(BR2_PACKAGE_MAIX_CDK_NN_TPU),y)
+MAIX_CDK_DEPENDENCIES += sophgo-library
+endif
+
 ifeq ($(BR2_TOOLCHAIN_BUILDROOT),y)
 #MAIX_CDK_TOOLCHAIN_BIN := $(HOST_DIR)/bin
 MAIX_CDK_TOOLCHAIN_PREFIX := $(BR2_ARCH)-buildroot-linux-gnu-
@@ -216,6 +220,12 @@ define MAIX_CDK_BUILD_CMDS
 		rm -rf $(@D)/components/llm/ ; \
 		rm -rf $(@D)/components/nn/ ; \
 		rm -rf $(@D)/components/vision_extra/ ; \
+	elif [ -e $(TARGET_DIR)/mnt/system/opt/cvitek_tpu_sdk ]; then \
+		mkdir -p $(@D)/components/3rd_party/cvi_tpu/cvi_tpu_lib ; \
+		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(TARGET_DIR)/mnt/system/opt/cvitek_tpu_sdk/ $(@D)/components/3rd_party/cvi_tpu/cvi_tpu_lib/ ; \
+		sed -i s/lib_musl/lib/g $(@D)/components/3rd_party/cvi_tpu/CMakeLists.txt ; \
+		sed -i s/lib_glibc/lib/g $(@D)/components/3rd_party/cvi_tpu/CMakeLists.txt ; \
+		rm -f $(@D)/components/3rd_party/cvi_tpu/component.py ; \
 	fi
 	cd $(@D)/ ; \
 	$(HOST_DIR)/bin/python3 -m pip install -r requirements.txt
