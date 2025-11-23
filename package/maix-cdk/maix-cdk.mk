@@ -10,6 +10,8 @@ MAIX_CDK_SITE = $(call github,sipeed,MaixCDK,$(MAIX_CDK_VERSION))
 MAIX_CDK_DL_PKGS_REF = 1c60539477058af78a0d00cf6ad112cd57bbbe31
 MAIX_CDK_DL_PKGS_URL = https://github.com/scpcom/maixcdk-dl-pkgs
 
+MAIX_CDK_PLATFORM = maixcam
+
 MAIX_CDK_SAMPLE = rtsp_demo
 
 MAIX_CDK_DEPENDENCIES =\
@@ -130,10 +132,10 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		sed -i 's|^        $${middleware_src_path}/v2/component/panel/sg200x|        $${middleware_src_path}/v2/component/isp/common\n        $${middleware_src_path}/v2/component/panel/sg200x|g' $(@D)/components/maixcam_lib/CMakeLists.txt ; \
 		sed -i 's|^    append_srcs_dir(middleware_src_dir  $${middleware_src_path}/v2/sample/common|    append_srcs_dir(middleware_src_dir  $${middleware_src_path}/v2/component/isp/common\n                                        $${middleware_src_path}/v2/sample/common|g' $(@D)/components/maixcam_lib/CMakeLists.txt ; \
 	fi
-	if [ -e ${@D}/components/maixcam_lib/lib_maixcam -a ! -e ${@D}/components/maixcam_lib/lib ]; then \
-		ln -s lib_maixcam ${@D}/components/maixcam_lib/lib ; \
+	if [ -e ${@D}/components/maixcam_lib/lib_$(MAIX_CDK_PLATFORM) -a ! -e ${@D}/components/maixcam_lib/lib ]; then \
+		ln -s lib_$(MAIX_CDK_PLATFORM) ${@D}/components/maixcam_lib/lib ; \
 	fi
-	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) -a "X$(BR2_PACKAGE_MAIX_CDK_KEEP_MAIXCAM_LIB)" != "Xy" ]; then \
+	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) -a "X$(BR2_PACKAGE_MAIX_CDK_KEEP_MAIXCAM_LIB)" != "Xy" -a "$(MAIX_CDK_PLATFORM)" = "maixcam" ]; then \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) ${@D}/components/maixcam_lib/lib/ ; \
 	fi
 	if [ -e $(@D)/$(MAIX_CDK_MIDDLEWARE)/v2/$(MAIX_CDK_EXT_MAIXCAM_LIB) -a "X$(BR2_PACKAGE_MAIX_CDK_KEEP_MAIXCAM_LIB)" != "Xy" -a -e ${@D}/components/maixcam_lib/lib_maixcam ]; then \
@@ -156,6 +158,8 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		rm -f $(@D)/components/3rd_party/harfbuzz/component.py ; \
 		sed -i 's|EXISTS "$${CMAKE_CURRENT_LIST_DIR}/opencv4_lib_maixcam"|EXISTS "$(TARGET_DIR)/usr"|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i 's|opencv_lib_dir "$${CMAKE_CURRENT_LIST_DIR}/opencv4_lib_maixcam"|opencv_lib_dir "$(TARGET_DIR)/usr"|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
+		sed -i 's|opencv_lib_dir "$${DL_EXTRACTED_PATH}/opencv/opencv4/opencv4_lib_maixcam_musl_$${version_str}"|opencv_lib_dir "$(TARGET_DIR)/usr"|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
+		sed -i 's|opencv_lib_dir "$${DL_EXTRACTED_PATH}/opencv/opencv4/opencv4_lib_maixcam2_glibc_$${version_str}"|opencv_lib_dir "$(TARGET_DIR)/usr"|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i 's|$${opencv_lib_dir}/dl_lib|$${opencv_lib_dir}/lib|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i s/'list.APPEND ADD_REQUIREMENTS pthread dl.$$'/'list(APPEND ADD_REQUIREMENTS pthread dl atomic)'/g $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i s/'# list.APPEND ADD_REQUIREMENTS pthread dl atomic.$$'/'list(APPEND ADD_REQUIREMENTS pthread dl atomic)'/g $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
@@ -166,6 +170,7 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links --exclude=build --exclude=test $(@D)/../harfbuzz-$(HARFBUZZ_VERSION)/ $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
 		sed -i 's|if(CONFIG_TOOLCHAIN_PATH MATCHES "musl")|if(EXISTS "$(TARGET_DIR)/usr/lib/python$${py_ver_short}")|g' $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
 		sed -i 's|$${DL_EXTRACTED_PATH}/python3/python3_lib_maixcam_musl_3.11.6|$(TARGET_DIR)/usr|g' $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
+		sed -i 's|$${DL_EXTRACTED_PATH}/python3/python3.13_maixcam2|$(TARGET_DIR)/usr|g' $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
 		sed -i s/'CONFIG_PYTHON_VERSION_MAJOR "3"'/'CONFIG_PYTHON_VERSION_MAJOR "$(PYVER_MAJOR)"'/g $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
 		sed -i s/'CONFIG_PYTHON_VERSION_MINOR "11"'/'CONFIG_PYTHON_VERSION_MINOR "$(PYVER_MINOR)"'/g $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
 		sed -i s/'CONFIG_PYTHON_VERSION_PATCH "6"'/'CONFIG_PYTHON_VERSION_PATCH "$(PYVER_PATCH)"'/g $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
@@ -180,18 +185,18 @@ endef
 MAIX_CDK_POST_EXTRACT_HOOKS += MAIX_CDK_POST_EXTRACT_FIXUP
 
 define MAIX_CDK_BUILD_CMDS
-	sed -i s/'^    url: .*'/'    url:'/g $(@D)/platforms/maixcam.yaml
-	sed -i s/'^    sha256sum: .*'/'    sha256sum:'/g $(@D)/platforms/maixcam.yaml
-	sed -i s/'^    filename: .*'/'    filename:'/g $(@D)/platforms/maixcam.yaml
-	sed -i s/'^    path: .*'/'    path:'/g $(@D)/platforms/maixcam.yaml
+	sed -i s/'^    url: .*'/'    url:'/g $(@D)/platforms/$(MAIX_CDK_PLATFORM).yaml
+	sed -i s/'^    sha256sum: .*'/'    sha256sum:'/g $(@D)/platforms/$(MAIX_CDK_PLATFORM).yaml
+	sed -i s/'^    filename: .*'/'    filename:'/g $(@D)/platforms/$(MAIX_CDK_PLATFORM).yaml
+	sed -i s/'^    path: .*'/'    path:'/g $(@D)/platforms/$(MAIX_CDK_PLATFORM).yaml
 	if [ "X$(MAIX_CDK_TOOLCHAIN_BIN)" = "X"  -o ! -e "$(MAIX_CDK_TOOLCHAIN_BIN)" ]; then \
-		sed -i 's|^    bin_path: .*|    bin_path: '$(HOST_DIR)/bin'|g' $(@D)/platforms/maixcam.yaml ; \
+		sed -i 's|^    bin_path: .*|    bin_path: '$(HOST_DIR)/bin'|g' $(@D)/platforms/$(MAIX_CDK_PLATFORM).yaml ; \
 	else \
-		sed -i 's|^    bin_path: .*|    bin_path: '$(realpath $(MAIX_CDK_TOOLCHAIN_BIN))'|g' $(@D)/platforms/maixcam.yaml ; \
+		sed -i 's|^    bin_path: .*|    bin_path: '$(realpath $(MAIX_CDK_TOOLCHAIN_BIN))'|g' $(@D)/platforms/$(MAIX_CDK_PLATFORM).yaml ; \
 	fi
-	sed -i 's|^    prefix: .*|    prefix: '$(MAIX_CDK_TOOLCHAIN_PREFIX)'|g' $(@D)/platforms/maixcam.yaml
-	sed -i "s|^    c_flags: .*|    c_flags: $(TARGET_LDFLAGS)|g" $(@D)/platforms/maixcam.yaml
-	sed -i "s|^    cxx_flags: .*|    cxx_flags: $(TARGET_LDFLAGS)|g" $(@D)/platforms/maixcam.yaml
+	sed -i 's|^    prefix: .*|    prefix: '$(MAIX_CDK_TOOLCHAIN_PREFIX)'|g' $(@D)/platforms/$(MAIX_CDK_PLATFORM).yaml
+	sed -i "s|^    c_flags: .*|    c_flags: $(TARGET_LDFLAGS)|g" $(@D)/platforms/$(MAIX_CDK_PLATFORM).yaml
+	sed -i "s|^    cxx_flags: .*|    cxx_flags: $(TARGET_LDFLAGS)|g" $(@D)/platforms/$(MAIX_CDK_PLATFORM).yaml
 	sed -i 's|COMMAND python |COMMAND '$(HOST_DIR)/bin/python3' |g' $(@D)/tools/cmake/*.cmake
 	sed -i 's|COMMAND python3 |COMMAND '$(HOST_DIR)/bin/python3' |g' $(@D)/tools/cmake/*.cmake
 	sed -i 's|set.$${python} python3 |set($${python} '$(HOST_DIR)/bin/python3' |g' $(@D)/tools/cmake/*.cmake
@@ -231,7 +236,7 @@ define MAIX_CDK_BUILD_CMDS
 	$(HOST_DIR)/bin/python3 -m pip install -r requirements.txt
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES)" = "Xy" ]; then \
 		cd $(@D)/examples/$(MAIX_CDK_SAMPLE)/ ; \
-		PATH=$(BR_PATH) $(HOST_DIR)/bin/maixcdk build -p maixcam ; \
+		PATH=$(BR_PATH) $(HOST_DIR)/bin/maixcdk build -p $(MAIX_CDK_PLATFORM) ; \
 	fi
 	if [ ! -e $(@D)/components/nn ]; then \
 		rm -rf $(@D)/projects/app_classifier/ ; \
@@ -307,7 +312,7 @@ define MAIX_CDK_BUILD_CMDS
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_EXAMPLES)" = "Xy" -a -e $(@D)/distapps.sh -a -e $(@D)/test/test_examples/test_cases.sh ]; then \
 		chmod +x $(@D)/test/test_examples/test_cases.sh ; \
 		cd $(@D)/test/test_examples/ ; \
-		PATH=$(BR_PATH) ./test_cases.sh maixcam 0 ; \
+		PATH=$(BR_PATH) ./test_cases.sh $(MAIX_CDK_PLATFORM) 0 ; \
 	fi
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES)" != "Xy" ]; then \
 		rm -rf $(@D)/components/3rd_party/alsa_lib/ ; \
