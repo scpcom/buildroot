@@ -4,13 +4,13 @@ Date: Tue, 14 Oct 2025 20:39:06 +0200
 Subject: [PATCH] server: hid: mode: add no-hid mode
 
 ---
- server/service/hid/mode.go | 32 +++++++++++++++++++++++---------
+ server/service/hid/status.go | 32 +++++++++++++++++++++++---------
  1 file changed, 23 insertions(+), 9 deletions(-)
 
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index 56c23cd..07794dd 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
 @@ -16,6 +16,7 @@ const (
  	ModeNormal  = "normal"
  	ModeHidOnly = "hid-only"

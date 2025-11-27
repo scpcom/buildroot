@@ -5,7 +5,7 @@ Subject: [PATCH] server: hid: mode: handle all related boot flags
 
 ---
  server/service/hid/bios.go  |  4 ---
- server/service/hid/mode.go  | 52 +++++++++++++++++++++++++++++++++++++
+ server/service/hid/status.go  | 52 +++++++++++++++++++++++++++++++++++++
  server/service/hid/reset.go |  7 +++++
  3 files changed, 59 insertions(+), 4 deletions(-)
 
@@ -24,14 +24,14 @@ index e92ec22..f9f7c77 100644
  func (s *Service) GetBiosMode(c *gin.Context) {
  	var rsp proto.Response
  
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index a0371c5..8936b45 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
 @@ -28,7 +28,12 @@ const (
- 	HidOnlyModeScript = "/kvmapp/system/init.d/S03usbhid"
- 	KbdOnlyModeScript = "/kvmapp/system/init.d/S03usbkeyboard"
- 	TargetModeScript  = "/etc/init.d/S03usbdev"
+ 	ModeKbdOnlyScript = "/kvmapp/system/init.d/S03usbkeyboard"
+ 
+ 	USBDevScript = "/etc/init.d/S03usbdev"
 +
 +	BiosFile          = "/boot/BIOS"
 +	NoHidFile         = "/boot/disable_hid"
@@ -57,6 +57,20 @@ index a0371c5..8936b45 100644
  	biosmode, _ := getBiosMode();
  
  	msg, err := setHidMode(req.Mode, biosmode)
+@@ -138,6 +138,13 @@ func (s *Service) Reset(c *gin.Context) {
+ }
+ 
+ func disable() (error) {
++	hidGadgetOn, _ := isFuncExist(HidGadgetPath)
++
++	// gadget already disabled
++	if (!hidGadgetOn) {
++		return nil
++	}
++
+ 	// reset USB
+ 	f, err := os.OpenFile("/sys/kernel/config/usb_gadget/g0/UDC", os.O_WRONLY, 0644)
+ 	if err != nil {
 @@ -182,6 +196,13 @@ func copyModeFile(srcScript string) error {
  }
  
@@ -115,24 +129,6 @@ index a0371c5..8936b45 100644
 +	}
  
  	data, err := os.ReadFile(hidBiosFlag)
- 	if err != nil {
-diff --git a/server/service/hid/reset.go b/server/service/hid/reset.go
-index 45d5ae5..7eb064a 100644
---- a/server/service/hid/reset.go
-+++ b/server/service/hid/reset.go
-@@ -38,6 +38,13 @@ func (s *Service) Reset(c *gin.Context) {
- }
- 
- func disable() (error) {
-+	hidGadgetOn, _ := isFuncExist(HidGadgetPath)
-+
-+	// gadget already disabled
-+	if (!hidGadgetOn) {
-+		return nil
-+	}
-+
- 	// reset USB
- 	f, err := os.OpenFile("/sys/kernel/config/usb_gadget/g0/UDC", os.O_WRONLY, 0644)
  	if err != nil {
 -- 
 2.34.1

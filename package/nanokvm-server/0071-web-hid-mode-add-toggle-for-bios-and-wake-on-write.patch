@@ -5,7 +5,7 @@ Subject: [PATCH] web: hid-mode: add toggle for bios and wake on write
 
 ---
  server/proto/hid.go                           |  2 +
- server/service/hid/mode.go                    | 24 +++--
+ server/service/hid/status.go                    | 24 +++--
  web/src/api/hid.ts                            | 19 +++-
  web/src/i18n/locales/en.ts                    |  2 +
  web/src/jotai/mouse.ts                        |  3 +
@@ -23,10 +23,10 @@ index e14a8ec..e120f7e 100644
 +	Bios string `validate:"required"` // normal or bios
 +	Wow string `validate:"required"` // no-wow or wow
  }
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index cf8a0b2..f7dadd9 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
 @@ -108,7 +108,20 @@ func (s *Service) SetHidMode(c *gin.Context) {
  		return
  	}

@@ -4,41 +4,30 @@ Date: Sun, 12 Oct 2025 00:36:25 +0200
 Subject: [PATCH] server: hid: set mode without reboot
 
 ---
- server/service/hid/mode.go | 225 ++++++++++++++++++++++++++++++++++++-
+ server/service/hid/status.go | 225 ++++++++++++++++++++++++++++++++++++-
  1 file changed, 219 insertions(+), 6 deletions(-)
 
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index 9a77cb9..5cbb76c 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
-@@ -3,11 +3,10 @@ package hid
- import (
- 	"NanoKVM-Server/proto"
- 	"errors"
-+	"fmt"
- 	"io"
- 	"os"
--	"os/exec"
- 	"strings"
--	"time"
- 
- 	"github.com/gin-gonic/gin"
- 	log "github.com/sirupsen/logrus"
-@@ -16,7 +15,14 @@ import (
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
+@@ -16,7 +15,15 @@ import (
  const (
  	ModeNormal  = "normal"
  	ModeHidOnly = "hid-only"
+-	ModeFlag    = "/sys/kernel/config/usb_gadget/g0/bcdDevice"
 +	ModeKbdOnly = "kbd-only"
- 
++
 +	ModeNonBios = "normal"
 +	ModeHidBios = "bios"
 +
 +	HidGadgetPath     = "/sys/kernel/config/usb_gadget/g0"
 +	HidConfPath       = "/sys/kernel/config/usb_gadget/g0/configs/c.1"
 +	HidFuncPath       = "/sys/kernel/config/usb_gadget/g0/functions"
- 	ModeFlag          = "/sys/kernel/config/usb_gadget/g0/bcdDevice"
- 	NormalModeScript  = "/kvmapp/system/init.d/S03usbdev"
- 	HidOnlyModeScript = "/kvmapp/system/init.d/S03usbhid"
++	ModeFlag          = "/sys/kernel/config/usb_gadget/g0/bcdDevice"
+ 
+ 	ModeNormalScript  = "/kvmapp/system/init.d/S03usbdev"
+ 	ModeHidOnlyScript = "/kvmapp/system/init.d/S03usbhid"
 @@ -26,6 +32,12 @@ const (
  var modeMap = map[string]string{
  	"0x0510": ModeNormal,
@@ -52,6 +41,21 @@ index 9a77cb9..5cbb76c 100644
  }
  
  func (s *Service) GetHidMode(c *gin.Context) {
+@@ -48,14 +60,6 @@ func (s *Service) SetHidMode(c *gin.Context) {
+ 		return
+ 	}
+ 
+-	h := GetHid()
+-	h.Lock()
+-	h.CloseNoLock()
+-	defer func() {
+-		h.OpenNoLock()
+-		h.Unlock()
+-	}()
+-
+ 	srcScript := ModeNormalScript
+ 	if req.Mode == ModeHidOnly {
+ 		srcScript = ModeHidOnlyScript
 @@ -71,11 +83,15 @@ func (s *Service) SetHidMode(c *gin.Context) {
  		return
  	}
@@ -71,7 +75,7 @@ index 9a77cb9..5cbb76c 100644
 +	rsp.OkRsp(c)
  }
  
- func copyModeFile(srcScript string) error {
+ func disable() (error) {
 @@ -156,3 +172,200 @@ func getHidMode() (string, error) {
  
  	return mode, nil

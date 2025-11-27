@@ -4,19 +4,20 @@ Date: Mon, 13 Oct 2025 03:58:33 +0200
 Subject: [PATCH] server: hid: mode: do full gadget configuration
 
 ---
- server/service/hid/mode.go | 108 ++++++++++++++++++++++++++++++++++++-
+ server/service/hid/status.go | 108 ++++++++++++++++++++++++++++++++++++-
  1 file changed, 106 insertions(+), 2 deletions(-)
 
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index f489139..a0371c5 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
-@@ -26,9 +26,17 @@ const (
- 	ModeFlag          = "/sys/kernel/config/usb_gadget/g0/bcdDevice"
- 	NormalModeScript  = "/kvmapp/system/init.d/S03usbdev"
- 	HidOnlyModeScript = "/kvmapp/system/init.d/S03usbhid"
-+	KbdOnlyModeScript = "/kvmapp/system/init.d/S03usbkeyboard"
- 	TargetModeScript  = "/etc/init.d/S03usbdev"
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
+@@ -26,10 +26,18 @@ const (
+ 
+ 	ModeNormalScript  = "/kvmapp/system/init.d/S03usbdev"
+ 	ModeHidOnlyScript = "/kvmapp/system/init.d/S03usbhid"
++	ModeKbdOnlyScript = "/kvmapp/system/init.d/S03usbkeyboard"
+ 
+ 	USBDevScript = "/etc/init.d/S03usbdev"
 +	NoWowFile         = "/boot/usb.notwakeup"
  )
  
@@ -55,11 +56,11 @@ index f489139..a0371c5 100644
  		return
  	}
 @@ -82,6 +99,8 @@ func (s *Service) SetHidMode(c *gin.Context) {
- 	srcScript := NormalModeScript
+ 	srcScript := ModeNormalScript
  	if req.Mode == ModeHidOnly {
- 		srcScript = HidOnlyModeScript
+ 		srcScript = ModeHidOnlyScript
 +	} else if req.Mode == ModeKbdOnly {
-+		srcScript = KbdOnlyModeScript
++		srcScript = ModeKbdOnlyScript
  	}
  
  	if err := copyModeFile(srcScript); err != nil {

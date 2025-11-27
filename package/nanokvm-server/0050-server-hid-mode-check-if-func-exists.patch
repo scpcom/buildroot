@@ -4,13 +4,13 @@ Date: Sun, 12 Oct 2025 19:12:49 +0200
 Subject: [PATCH] server: hid: mode: check if func exists
 
 ---
- server/service/hid/mode.go | 18 ++++++++++++------
+ server/service/hid/status.go | 18 ++++++++++++------
  1 file changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index 5cbb76c..b49d25d 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
 @@ -196,10 +196,14 @@ func setHidMode(hidmode, biosmode string) (string, error) {
  		hidFunction := fmt.Sprintf("%s/%s", HidFuncPath, hidfunc)
  		hidSymLink := fmt.Sprintf("%s/%s", HidConfPath, hidfunc)

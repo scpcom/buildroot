@@ -4,14 +4,14 @@ Date: Tue, 14 Oct 2025 02:13:19 +0200
 Subject: [PATCH] server: hid: mode: set otg role
 
 ---
- server/service/hid/mode.go | 27 +++++++++++++++++++++++++++
+ server/service/hid/status.go | 27 +++++++++++++++++++++++++++
  1 file changed, 27 insertions(+)
 
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index 8936b45..56c23cd 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
-@@ -20,10 +20,12 @@ const (
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
+@@ -20,6 +20,7 @@ const (
  	ModeNonBios = "normal"
  	ModeHidBios = "bios"
  
@@ -19,11 +19,6 @@ index 8936b45..56c23cd 100644
  	HidGadgetPath     = "/sys/kernel/config/usb_gadget/g0"
  	HidConfPath       = "/sys/kernel/config/usb_gadget/g0/configs/c.1"
  	HidFuncPath       = "/sys/kernel/config/usb_gadget/g0/functions"
- 	ModeFlag          = "/sys/kernel/config/usb_gadget/g0/bcdDevice"
-+
- 	NormalModeScript  = "/kvmapp/system/init.d/S03usbdev"
- 	HidOnlyModeScript = "/kvmapp/system/init.d/S03usbhid"
- 	KbdOnlyModeScript = "/kvmapp/system/init.d/S03usbkeyboard"
 @@ -510,6 +512,10 @@ func setHidMode(hidmode, biosmode string) (string, error) {
  		return "enable hid failed", err
  	}

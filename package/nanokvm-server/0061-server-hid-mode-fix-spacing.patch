@@ -4,13 +4,13 @@ Date: Sun, 12 Oct 2025 23:08:27 +0200
 Subject: [PATCH] server: hid: mode: fix spacing
 
 ---
- server/service/hid/mode.go | 4 ++--
+ server/service/hid/status.go | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index 22b2896..f489139 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
 @@ -244,7 +244,7 @@ func setHidMode(hidmode, biosmode string) (string, error) {
  		maxPkt = "0x08"
  		strVen = "Alps Electric"

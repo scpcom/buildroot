@@ -5,13 +5,13 @@ Subject: [PATCH] server: hid: mode: create non-hid functions if disable
  HID-Only mode
 
 ---
- server/service/hid/mode.go | 49 +++++++++++++++++++++++++++++---------
+ server/service/hid/status.go | 49 +++++++++++++++++++++++++++++---------
  1 file changed, 38 insertions(+), 11 deletions(-)
 
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index b49d25d..22b2896 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
 @@ -40,6 +40,12 @@ var biosMap = map[string]string{
  	"1": ModeHidBios,
  }

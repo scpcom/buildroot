@@ -5,7 +5,7 @@ Subject: [PATCH] server: hid: mode: allways set boot flags
 
 ---
  server/service/hid/bios.go | 22 +++-------
- server/service/hid/mode.go | 84 +++++++++++++++++++++++++++++++-------
+ server/service/hid/status.go | 84 +++++++++++++++++++++++++++++++-------
  server/service/hid/wow.go  | 22 +++-------
  3 files changed, 81 insertions(+), 47 deletions(-)
 
@@ -55,10 +55,10 @@ index 35d3b0d..4e58f61 100644
 +
  	rsp.OkRsp(c)
  }
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index a9c8dfb..cf8a0b2 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
 @@ -125,21 +125,6 @@ func (s *Service) SetHidMode(c *gin.Context) {
  		return
  	}

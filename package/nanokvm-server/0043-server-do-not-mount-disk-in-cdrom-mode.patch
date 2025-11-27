@@ -26,40 +26,31 @@ diff --git a/web/src/pages/desktop/menu/image/index.tsx b/web/src/pages/desktop/
 index ae0f499..584583a 100644
 --- a/web/src/pages/desktop/menu/image/index.tsx
 +++ b/web/src/pages/desktop/menu/image/index.tsx
-@@ -4,7 +4,7 @@ import clsx from 'clsx';
- import { DiscIcon } from 'lucide-react';
- import { useTranslation } from 'react-i18next';
- 
--import { getCdRom, getMountedImage } from '@/api/storage.ts';
-+import { getCdRom, getMountedImage, mountImage } from '@/api/storage.ts';
- import { MenuItem } from '@/components/menu-item.tsx';
- 
- import { Images } from './images.tsx';
 @@ -31,6 +31,15 @@ export const Image = () => {
      });
    }, []);
  
-+  function changeCdrom(cdrom: boolean) {
-+    setCdrom(cdrom);
-+    getMountedImage().then((rsp) => {
++  function changeMode(mode: string) {
++    setMode(mode);
++    api.getMountedImage().then((rsp) => {
 +      if (rsp.code === 0) {
-+        mountImage(rsp.data?.file, cdrom);
++        api.mountImage(rsp.data?.file, mode === 'cd-rom');
 +      }
 +    });
 +  }
 +
-   const content = (
-     <div className="min-w-[300px]">
-       <div className="flex items-center justify-between px-1">
+   return (
+     <>
+       <div
 @@ -47,7 +56,7 @@ export const Image = () => {
-               <Switch
-                 size="small"
-                 checked={cdrom}
--                onChange={(checked) => setCdrom(checked)}
-+                onChange={(checked) => changeCdrom(checked)}
-               ></Switch>
-             </div>
-           </Tooltip>
+         <div className="flex flex-col space-y-6">
+           <div className="flex items-center justify-between">
+             <span>{t('image.mountMode')}</span>
+-            <Segmented value={mode} options={modes} disabled={isMounted} onChange={setMode} />
++            <Segmented value={mode} options={modes} disabled={isMounted} onChange={changeMode} />
+           </div>
+ 
+           <Divider style={{ margin: '24px 0 0 0' }} />
 -- 
 2.34.1
 

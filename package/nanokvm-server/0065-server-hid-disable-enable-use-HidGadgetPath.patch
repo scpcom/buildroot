@@ -4,21 +4,13 @@ Date: Tue, 14 Oct 2025 02:59:31 +0200
 Subject: [PATCH] server: hid: disable/enable: use HidGadgetPath
 
 ---
- server/service/hid/reset.go | 18 +++++++++++-------
+ server/service/hid/status.go | 18 +++++++++++-------
  1 file changed, 11 insertions(+), 7 deletions(-)
 
-diff --git a/server/service/hid/reset.go b/server/service/hid/reset.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index 7eb064a..ae7a19e 100644
---- a/server/service/hid/reset.go
-+++ b/server/service/hid/reset.go
-@@ -2,6 +2,7 @@ package hid
- 
- import (
- 	"NanoKVM-Server/proto"
-+	"fmt"
- 	"os"
- 	"time"
- 
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
 @@ -38,6 +39,7 @@ func (s *Service) Reset(c *gin.Context) {
  }
  

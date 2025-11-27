@@ -7,7 +7,7 @@ Subject: [PATCH] server: hid: mode: add wake on write api
  server/proto/hid.go        |  8 +++++
  server/router/hid.go       |  3 ++
  server/service/hid/bios.go |  3 +-
- server/service/hid/mode.go | 47 +++++++++++++++++++++++---
+ server/service/hid/status.go | 47 +++++++++++++++++++++++---
  server/service/hid/wow.go  | 69 ++++++++++++++++++++++++++++++++++++++
  5 files changed, 125 insertions(+), 5 deletions(-)
  create mode 100644 server/service/hid/wow.go
@@ -44,7 +44,7 @@ index f281005..36290ae 100644
 +
  	api.GET("/hid/mode", service.GetHidMode)  // get hid mode
  	api.POST("/hid/mode", service.SetHidMode) // set hid mode
- }
+ 	api.POST("/hid/reset", service.ResetHid)  // reset hid
 diff --git a/server/service/hid/bios.go b/server/service/hid/bios.go
 index f9f7c77..35d3b0d 100644
 --- a/server/service/hid/bios.go
@@ -60,10 +60,10 @@ index f9f7c77..35d3b0d 100644
  	if err != nil {
  		rsp.ErrRsp(c, -2, msg)
  		return
-diff --git a/server/service/hid/mode.go b/server/service/hid/mode.go
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index 07794dd..a9c8dfb 100644
---- a/server/service/hid/mode.go
-+++ b/server/service/hid/mode.go
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
 @@ -21,6 +21,9 @@ const (
  	ModeNonBios = "normal"
  	ModeHidBios = "bios"

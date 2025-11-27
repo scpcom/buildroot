@@ -4,11 +4,11 @@
 #
 ################################################################################
 
-NANOKVM_SERVER_VERSION = 24a460e64a5ca3e9ee36a717b03069bcf43fce27
+NANOKVM_SERVER_VERSION = 9311b898f22b463ea5a1f4e395551012e544c9d6
 NANOKVM_SERVER_SITE = $(call github,sipeed,NanoKVM,$(NANOKVM_SERVER_VERSION))
 NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm
 
-NANOKVM_SERVER_GO_VENDOR_REF = 3031450a146ba186b5e833cd102c0ddab21db235
+NANOKVM_SERVER_GO_VENDOR_REF = 4e35d0820f4a95290aca33402e9916f38f950f1e
 NANOKVM_SERVER_GO_VENDOR_URL = https://github.com/scpcom/nanokvm-server-vendor
 
 NANOKVM_SERVER_DEPENDENCIES = host-go host-nodejs host-python3
@@ -187,11 +187,11 @@ define NANOKVM_SERVER_BUILD_CMDS
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
 	[ -e $(@D)/$(NANOKVM_SERVER_GOMOD)/vendor ] || GOPROXY=direct GOSUMDB="sum.golang.org" $(GO_BIN) mod tidy
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
-	sed -i 's|-L../dl_lib -lkvm|-L../dl_lib -L$(TARGET_DIR)/usr/lib -lkvm|g' common/cgo.go ; \
-	sed -i s/' -lkvm$$'/' -lkvm -lmaixcam_lib -latomic -lae -laf -lawb -lcvi_bin -lcvi_bin_isp -lini -lisp -lisp_algo -lgdc -lrgn -lsys -lvdec -lvenc -lvi -lvo -lvpss'/g common/cgo.go
+	sed -i 's|-L../dl_lib -lkvm|-L../dl_lib -L$(TARGET_DIR)/usr/lib -lkvm|g' common/kvm_vision.go ; \
+	sed -i s/' -lkvm$$'/' -lkvm -lmaixcam_lib -latomic -lae -laf -lawb -lcvi_bin -lcvi_bin_isp -lini -lisp -lisp_algo -lgdc -lrgn -lsys -lvdec -lvenc -lvi -lvo -lvpss'/g common/kvm_vision.go
 	if [ -e $(@D)/$(NANOKVM_SERVER_GOMOD)/dl_lib/libkvm_mmf.so ]; then \
 		cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
-		sed -i s/'maixcam_lib'/'kvm_mmf'/g common/cgo.go ; \
+		sed -i s/'maixcam_lib'/'kvm_mmf'/g common/kvm_vision.go ; \
 	fi
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
 	CGO_ENABLED=1 $(NANOKVM_SERVER_GO_ENV) $(GO_BIN) build -mod vendor -x -ldflags="-extldflags '-Wl,-rpath,\$$ORIGIN/dl_lib'"
