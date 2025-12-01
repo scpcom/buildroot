@@ -162,7 +162,7 @@ index 534d4f0..fe0cec3 100644
 +        hidBIOS: 'HID BIOS Mode',
          hidOnly: 'HID-Only Mode',
          disk: 'Virtual Disk',
-         diskDesc: 'Mount virtual U-disk on the remote host',
+         diskDesc: 'Mount SD card on the remote host',
 diff --git a/web/src/jotai/mouse.ts b/web/src/jotai/mouse.ts
 index 691f03e..ef47798 100644
 --- a/web/src/jotai/mouse.ts
