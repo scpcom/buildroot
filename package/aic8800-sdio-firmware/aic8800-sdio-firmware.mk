@@ -9,8 +9,8 @@ AIC8800_SDIO_FIRMWARE_SITE = $(call github,lxowalle,aic8800-sdio-firmware,$(AIC8
 
 ifeq ($(BR2_PACKAGE_AIC8800_SDIO_FIRMWARE_D80),y)
 define AIC8800_SDIO_FIRMWARE_INSTALL_TARGET_CMDS
-	mkdir -pv $(TARGET_DIR)/usr/lib/firmware/aic8800_sdio/aic8800/
-	rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/aic8800D80/* $(TARGET_DIR)/usr/lib/firmware/aic8800_sdio/aic8800/
+	mkdir -pv $(TARGET_DIR)/usr/lib/firmware/aic8800_sdio/
+	rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/* $(TARGET_DIR)/usr/lib/firmware/aic8800_sdio/
 endef
 else
 define AIC8800_SDIO_FIRMWARE_INSTALL_TARGET_CMDS
