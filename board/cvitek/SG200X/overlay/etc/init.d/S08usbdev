@@ -199,7 +199,7 @@ then
 
         if [ -e /boot/usb.adbd ]
         then
-            if [ -z $(ps aux | grep adbd_monitor | grep -v grep) ]; then
+            if [ -z "$(ps aux | grep adbd_monitor | grep -v grep)" ]; then
                 /etc/adbd_monitor.sh &
             fi
         fi

@@ -7,8 +7,9 @@ then
         if [ -z "$(cat $UDC_PATH | tr -d '[:space:]')" ];
         then
             echo "try restart usb device"
-            /etc/init.d/S03usbdev stop
-            /etc/init.d/S03usbdev start
+            /etc/init.d/S08usbdev stop
+            /etc/init.d/S08usbdev start
+            /etc/init.d/S30gadget_nic restart
         fi
         sleep 5
     done
