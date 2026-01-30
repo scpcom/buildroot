@@ -8,7 +8,6 @@ Subject: [PATCH] web: hid-mode: add toggle for bios and wake on write
  server/service/hid/status.go                    | 24 +++--
  web/src/api/hid.ts                            | 19 +++-
  web/src/i18n/locales/en.ts                    |  2 +
- web/src/jotai/mouse.ts                        |  3 +
  web/src/pages/desktop/menu/mouse/hid-mode.tsx | 95 +++++++++++++++++--
  6 files changed, 126 insertions(+), 19 deletions(-)
 
@@ -127,49 +126,34 @@ index 9934083..bc2b964 100644
          enable: 'Enable',
          close: 'Close'
        }
-diff --git a/web/src/jotai/mouse.ts b/web/src/jotai/mouse.ts
-index d9166e5..099aaee 100644
---- a/web/src/jotai/mouse.ts
-+++ b/web/src/jotai/mouse.ts
-@@ -12,5 +12,8 @@ export const scrollIntervalAtom = atom(0);
- // hid bios mode: normal or bios
- export const biosModeAtom = atom<'normal' | 'bios'>('normal');
- 
-+// hid wow mode: no-wow or wow
-+export const wowModeAtom = atom<'no-wow' | 'wow'>('wow');
-+
- // hid mode: normal, hid-only, kbd-only or no-hid
- export const hidModeAtom = atom<'normal' | 'hid-only' | 'kbd-only' | 'no-hid'>('normal');
 diff --git a/web/src/pages/desktop/menu/mouse/hid-mode.tsx b/web/src/pages/desktop/menu/mouse/hid-mode.tsx
 index 797225b..60f9708 100644
 --- a/web/src/pages/desktop/menu/mouse/hid-mode.tsx
 +++ b/web/src/pages/desktop/menu/mouse/hid-mode.tsx
-@@ -1,19 +1,23 @@
+@@ -1,18 +1,22 @@
  import { useEffect, useState } from 'react';
 -import { Button, Divider, Modal, Select, Typography } from 'antd';
 +import { Button, Divider, Modal, Select, Switch, Typography } from 'antd';
  import clsx from 'clsx';
- import { useAtom } from 'jotai';
  import { PenIcon } from 'lucide-react';
  import { useTranslation } from 'react-i18next';
  
  import * as api from '@/api/hid.ts';
--import { hidModeAtom } from '@/jotai/mouse.ts';
-+import { hidModeAtom, biosModeAtom, wowModeAtom } from '@/jotai/mouse.ts';
  
  const { Paragraph } = Typography;
  
  export const HidMode = () => {
    const { t } = useTranslation();
-   const [hidMode, setHidMode] = useAtom(hidModeAtom);
-+  const [biosMode, setBiosMode] = useAtom(biosModeAtom);
-+  const [wowMode, setWowMode] = useAtom(wowModeAtom);
+ 
+   const [hidMode, setHidMode] = useState<'normal' | 'hid-only' | 'kbd-only' | 'no-hid'>('normal');
++  const [biosMode, setBiosMode] = useState<'normal' | 'bios'>('normal');
++  const [wowMode, setWowMode] = useState<'no-wow' | 'wow'>('wow');
    const [toggleMode, setToggleMode] = useState('');
 +  const [toggleBIOS, setToggleBIOS] = useState(biosBool());
 +  const [toggleWoW, setToggleWoW] = useState(wowBool());
- 
    const [isLoading, setIsLoading] = useState(false);
    const [isModalOpen, setIsModalOpen] = useState(false);
+   const [errMsg, setErrMsg] = useState('');
 @@ -28,8 +32,22 @@ export const HidMode = () => {
  
    useEffect(() => {

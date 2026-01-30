@@ -10,7 +10,6 @@ Subject: [PATCH] Add HID BIOS mode to menu
  web/src/api/hid.ts                            | 13 ++++
  web/src/i18n/locales/de.ts                    |  1 +
  web/src/i18n/locales/en.ts                    |  2 +
- web/src/jotai/mouse.ts                        |  3 +
  .../pages/desktop/menu/mouse/bios-mode.tsx    | 76 +++++++++++++++++++
  web/src/pages/desktop/menu/mouse/index.tsx    |  2 +
  9 files changed, 160 insertions(+)
@@ -136,8 +135,8 @@ index 0888003..4f46ffb 100644
 --- a/web/src/i18n/locales/de.ts
 +++ b/web/src/i18n/locales/de.ts
 @@ -88,6 +88,7 @@ const de = {
-       relative: 'Relativer Modus',
-       requestPointer: 'Relativer Modus aktiv. Klicken Sie auf den Desktop um den Mauszeiger zu sehen.',
+       requestPointer:
+         'Relativer Modus aktiv. Klicken Sie auf den Desktop um den Mauszeiger zu sehen.',
        resetHid: 'HID zurücksetzen',
 +      biosHid: 'HID BIOS-Modus',
        hidOnly: {
@@ -156,44 +155,29 @@ index 534d4f0..fe0cec3 100644
          title: 'HID-Only mode',
          desc: "If your mouse and keyboard stop responding and resetting HID doesn't help, it could be a compatibility issue between the NanoKVM and the device. Try to enable HID-Only mode for better compatibility.",
 @@ -264,6 +265,7 @@ const en = {
-         hdmi: {
-           description: 'Enable HDMI/monitor output'
+           scriptContent: 'Autostart Script Content',
+           settings: 'Settings'
          },
 +        hidBIOS: 'HID BIOS Mode',
          hidOnly: 'HID-Only Mode',
+         hidOnlyDesc: 'Stop emulating virtual devices, retaining only basic HID control',
          disk: 'Virtual Disk',
-         diskDesc: 'Mount SD card on the remote host',
-diff --git a/web/src/jotai/mouse.ts b/web/src/jotai/mouse.ts
-index 691f03e..ef47798 100644
---- a/web/src/jotai/mouse.ts
-+++ b/web/src/jotai/mouse.ts
-@@ -9,5 +9,8 @@ export const mouseModeAtom = atom('absolute');
- // mouse scroll interval (unit: ms)
- export const scrollIntervalAtom = atom(0);
- 
-+// hid bios mode: normal or bios
-+export const biosModeAtom = atom<'normal' | 'bios'>('normal');
-+
- // hid mode: normal or hid-only
- export const hidModeAtom = atom<'normal' | 'hid-only'>('normal');
 diff --git a/web/src/pages/desktop/menu/mouse/bios-mode.tsx b/web/src/pages/desktop/menu/mouse/bios-mode.tsx
 new file mode 100644
 index 0000000..a1c164d
 --- /dev/null
 +++ b/web/src/pages/desktop/menu/mouse/bios-mode.tsx
-@@ -0,0 +1,76 @@
+@@ -0,0 +1,74 @@
 +import { useEffect, useState } from 'react';
 +import clsx from 'clsx';
-+import { useAtom } from 'jotai';
 +import { MonitorCog } from 'lucide-react';
 +import { useTranslation } from 'react-i18next';
 +
 +import * as api from '@/api/hid.ts';
-+import { biosModeAtom } from '@/jotai/mouse.ts';
 +
 +export const BiosMode = () => {
 +  const { t } = useTranslation();
-+  const [biosMode, setBiosMode] = useAtom(biosModeAtom);
++  const [biosMode, setBiosMode] = useState<'normal' | 'bios'>('normal');
 +
 +  const [isLoading, setIsLoading] = useState(false);
 +
@@ -263,9 +247,9 @@ index f63f6c3..7461725 100644
 --- a/web/src/pages/desktop/menu/mouse/index.tsx
 +++ b/web/src/pages/desktop/menu/mouse/index.tsx
 @@ -9,6 +9,7 @@ import { mouseModeAtom, mouseStyleAtom, scrollIntervalAtom } from '@/jotai/mouse
- import { MenuItem } from '@/components/menu-item.tsx';
  
  import { Cursor } from './cursor.tsx';
+ import { Direction } from './direction.tsx';
 +import { BiosMode } from './bios-mode.tsx';
  import { HidMode } from './hid-mode.tsx';
  import { MouseMode } from './mouse-mode.tsx';

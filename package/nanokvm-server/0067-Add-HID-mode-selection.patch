@@ -6,7 +6,6 @@ Subject: [PATCH] Add HID mode selection
 ---
  web/src/i18n/locales/de.ts                    | 12 +++--
  web/src/i18n/locales/en.ts                    | 12 +++--
- web/src/jotai/mouse.ts                        |  4 +-
  web/src/pages/desktop/menu/mouse/hid-mode.tsx | 47 +++++++++++++++----
  4 files changed, 55 insertions(+), 20 deletions(-)
 
@@ -15,7 +14,7 @@ index e460c72..5ad374a 100644
 --- a/web/src/i18n/locales/de.ts
 +++ b/web/src/i18n/locales/de.ts
 @@ -89,14 +89,18 @@ const de = {
-       requestPointer: 'Relativer Modus aktiv. Klicken Sie auf den Desktop um den Mauszeiger zu sehen.',
+         'Relativer Modus aktiv. Klicken Sie auf den Desktop um den Mauszeiger zu sehen.',
        resetHid: 'HID zurücksetzen',
        biosHid: 'HID BIOS-Modus',
 -      hidOnly: {
@@ -64,18 +63,6 @@ index b7fd4fe..9934083 100644
        }
      },
      image: {
-diff --git a/web/src/jotai/mouse.ts b/web/src/jotai/mouse.ts
-index ef47798..d9166e5 100644
---- a/web/src/jotai/mouse.ts
-+++ b/web/src/jotai/mouse.ts
-@@ -12,5 +12,5 @@ export const scrollIntervalAtom = atom(0);
- // hid bios mode: normal or bios
- export const biosModeAtom = atom<'normal' | 'bios'>('normal');
- 
--// hid mode: normal or hid-only
--export const hidModeAtom = atom<'normal' | 'hid-only'>('normal');
-+// hid mode: normal, hid-only, kbd-only or no-hid
-+export const hidModeAtom = atom<'normal' | 'hid-only' | 'kbd-only' | 'no-hid'>('normal');
 diff --git a/web/src/pages/desktop/menu/mouse/hid-mode.tsx b/web/src/pages/desktop/menu/mouse/hid-mode.tsx
 index eb6341d..728541e 100644
 --- a/web/src/pages/desktop/menu/mouse/hid-mode.tsx
@@ -85,14 +72,15 @@ index eb6341d..728541e 100644
 -import { Button, Divider, Modal, Typography } from 'antd';
 +import { Button, Divider, Modal, Select, Typography } from 'antd';
  import clsx from 'clsx';
- import { useAtom } from 'jotai';
  import { PenIcon } from 'lucide-react';
+ import { useTranslation } from 'react-i18next';
 @@ -13,11 +13,19 @@ const { Paragraph } = Typography;
  export const HidMode = () => {
    const { t } = useTranslation();
-   const [hidMode, setHidMode] = useAtom(hidModeAtom);
-+  const [toggleMode, setToggleMode] = useState('');
  
+-  const [hidMode, setHidMode] = useState<'normal' | 'hid-only'>('normal');
++  const [hidMode, setHidMode] = useState<'normal' | 'hid-only' | 'kbd-only' | 'no-hid'>('normal');
++  const [toggleMode, setToggleMode] = useState('');
    const [isLoading, setIsLoading] = useState(false);
    const [isModalOpen, setIsModalOpen] = useState(false);
    const [errMsg, setErrMsg] = useState('');
