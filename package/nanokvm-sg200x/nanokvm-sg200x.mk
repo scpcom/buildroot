@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-NANOKVM_SG200X_VERSION = 2.3.0
-NANOKVM_SG200X_SUBLEVEL = -6
+NANOKVM_SG200X_VERSION = 2.3.1
+NANOKVM_SG200X_SUBLEVEL =
 NANOKVM_SG200X_BASE = nanokvm-skeleton-$(NANOKVM_SG200X_VERSION)$(NANOKVM_SG200X_SUBLEVEL)
 NANOKVM_SG200X_SOURCE = v$(NANOKVM_SG200X_VERSION)$(NANOKVM_SG200X_SUBLEVEL).zip
 NANOKVM_SG200X_SITE = https://github.com/scpcom/nanokvm-skeleton/archive/refs/tags
