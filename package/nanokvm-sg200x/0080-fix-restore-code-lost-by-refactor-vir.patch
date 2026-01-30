@@ -1,0 +1,92 @@
+From 0d5ee754e145e3a0cdd6af11cf2a8fa787702cf4 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Fri, 30 Jan 2026 15:24:36 +0100
+Subject: [PATCH 1/2] fix: restore code lost by refactor
+ virtual devices and HID
+
+---
+ kvmapp/system/init.d/S03usbdev | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/kvmapp/system/init.d/S03usbdev b/kvmapp/system/init.d/S03usbdev
+index 5dfa77b..2068721 100755
+--- a/kvmapp/system/init.d/S03usbdev
++++ b/kvmapp/system/init.d/S03usbdev
+@@ -94,6 +94,7 @@ start_usb_dev(){
+         ln -s functions/hid.GS2 configs/c.1
+     fi
+ 
++    # dedicated for media
+     if [ -e /boot/usb.disk0 ]
+     then
+             mkdir functions/mass_storage.disk0
+@@ -108,18 +109,22 @@ start_usb_dev(){
+             disk=$(cat /boot/usb.disk0)
+             if [ -z "${disk}" ]
+             then
+-                    # if [ ! -e /mnt/usbdisk.img ]
+-                    # then
+-                    #         fallocate -l 8G /mnt/usbdisk.img
+-                    #         mkfs.vfat /mnt/usbdisk.img
+-                    # fi
+-                    echo /dev/mmcblk0p3 > functions/mass_storage.disk0/lun.0/file
++                    echo "" > functions/mass_storage.disk0/lun.0/file
+             else
+                     cat /boot/usb.disk0 > functions/mass_storage.disk0/lun.0/file
+             fi
+     fi
+ 
+-    ls /sys/class/udc/ | cat > UDC
++    # mount data partition
++    if [ -e /boot/usb.disk1 ]; then
++        mkdir functions/mass_storage.disk1
++        ln -s functions/mass_storage.disk1 configs/c.1/
++        echo /dev/mmcblk0p3 > functions/mass_storage.disk1/lun.0/file
++    fi
++
++    if [ ! -e /boot/udc.disable ]; then
++        ls /sys/class/udc/ | cat > UDC
++    fi
+     echo device > /proc/cviusb/otg_role
+ }
+ 
+@@ -131,7 +136,9 @@ start_usb_host(){
+ restart_usb_dev(){
+     echo > /sys/kernel/config/usb_gadget/g0/UDC
+     sleep 1
+-    ls /sys/class/udc/ | cat > /sys/kernel/config/usb_gadget/g0/UDC
++    if [ ! -e /boot/udc.disable ]; then
++        ls /sys/class/udc/ | cat > /sys/kernel/config/usb_gadget/g0/UDC
++    fi
+     echo "USB Restart OK!"
+ }
+ 
+diff --git a/kvmapp/system/init.d/S03usbhid b/kvmapp/system/init.d/S03usbhid
+index b5f160e..d3c6d6a 100755
+--- a/kvmapp/system/init.d/S03usbhid
++++ b/kvmapp/system/init.d/S03usbhid
+@@ -72,7 +72,9 @@ start_usb_dev(){
+     echo -ne \\x05\\x01\\x09\\x02\\xa1\\x01\\x09\\x01\\xa1\\x00\\x05\\x09\\x19\\x01\\x29\\x03\\x15\\x00\\x25\\x01\\x95\\x03\\x75\\x01\\x81\\x02\\x95\\x01\\x75\\x05\\x81\\x01\\x05\\x01\\x09\\x30\\x09\\x31\\x15\\x00\\x26\\xff\\x7f\\x35\\x00\\x46\\xff\\x7f\\x75\\x10\\x95\\x02\\x81\\x02\\x05\\x01\\x09\\x38\\x15\\x81\\x25\\x7f\\x35\\x00\\x45\\x00\\x75\\x08\\x95\\x01\\x81\\x06\\xc0\\xc0 > functions/hid.GS2/report_desc
+     ln -s functions/hid.GS2 configs/c.1
+ 
+-    ls /sys/class/udc/ | cat > UDC
++    if [ ! -e /boot/udc.disable ]; then
++        ls /sys/class/udc/ | cat > UDC
++    fi
+     echo device > /proc/cviusb/otg_role
+ }
+ 
+@@ -84,7 +86,9 @@ start_usb_host(){
+ restart_usb_dev(){
+     echo > /sys/kernel/config/usb_gadget/g0/UDC
+     sleep 1
+-    ls /sys/class/udc/ | cat > /sys/kernel/config/usb_gadget/g0/UDC
++    if [ ! -e /boot/udc.disable ]; then
++        ls /sys/class/udc/ | cat > /sys/kernel/config/usb_gadget/g0/UDC
++    fi
+     echo "USB Restart OK!"
+ }
+ 
+-- 
+2.34.1
+
