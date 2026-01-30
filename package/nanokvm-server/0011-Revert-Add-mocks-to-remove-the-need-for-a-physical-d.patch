@@ -23,18 +23,18 @@ index 130e803..328342d 100644
      "dev": "vite",
 -    "mocked": "vite --mode mocked",
      "build": "tsc && vite build",
-     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+     "lint": "eslint . --report-unused-disable-directives",
      "preview": "vite preview"
 @@ -52,7 +51,6 @@
-     "eslint-plugin-react": "^7.37.2",
      "eslint-plugin-react-hooks": "^5.1.0",
      "eslint-plugin-react-refresh": "^0.4.16",
+     "globals": "^17.0.0",
 -    "msw": "^2.6.0",
      "postcss": "^8.4.47",
      "prettier": "^3.4.2",
      "prettier-plugin-tailwindcss": "^0.6.9",
-@@ -60,10 +58,5 @@
-     "typescript": "^5.6.3",
+@@ -66,10 +64,5 @@
+     "typescript-eslint": "^8.53.0",
      "vite": "7.1.11",
      "vite-tsconfig-paths": "^4.3.2"
 -  },
@@ -44,6 +44,7 @@ index 130e803..328342d 100644
 -    ]
    }
  }
+\ No newline at end of file
 diff --git a/web/public/mockServiceWorker.js b/web/public/mockServiceWorker.js
 deleted file mode 100644
 index 6eb8052..0000000
