@@ -15,13 +15,15 @@ diff --git a/server/proto/hid.go b/server/proto/hid.go
 index e14a8ec..e120f7e 100644
 --- a/server/proto/hid.go
 +++ b/server/proto/hid.go
-@@ -22,4 +22,6 @@ type GetHidModeRsp struct {
+@@ -22,6 +22,8 @@ type GetHidModeRsp struct {
  
  type SetHidModeReq struct {
  	Mode string `validate:"required"` // normal or hid-only
 +	Bios string `validate:"required"` // normal or bios
 +	Wow string `validate:"required"` // no-wow or wow
  }
+ 
+ type ShortcutKey struct {
 diff --git a/server/service/hid/status.go b/server/service/hid/status.go
 index cf8a0b2..f7dadd9 100644
 --- a/server/service/hid/status.go
