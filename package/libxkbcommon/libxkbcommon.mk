@@ -36,4 +36,10 @@ else
 LIBXKBCOMMON_CONF_OPTS += -Denable-wayland=false
 endif
 
+define LIBXKBCOMMON_COPY_DATA
+	mkdir -p $(TARGET_DIR)/usr/share/X11/xkb/
+	cp -dpfr $(@D)/test/data/* $(TARGET_DIR)/usr/share/X11/xkb/
+endef
+LIBXKBCOMMON_POST_INSTALL_TARGET_HOOKS += LIBXKBCOMMON_COPY_DATA
+
 $(eval $(meson-package))
