@@ -4,10 +4,9 @@
 #
 ################################################################################
 
-OVERLAYFS_TOOLS_VERSION = 2025.01
-OVERLAYFS_TOOLS_BASE = overlayfs-tools-$(OVERLAYFS_TOOLS_VERSION)
-OVERLAYFS_TOOLS_SOURCE = v$(OVERLAYFS_TOOLS_VERSION).tar.gz
-OVERLAYFS_TOOLS_SITE = https://github.com/kmxz/overlayfs-tools/archive/refs/tags
+OVERLAYFS_TOOLS_VERSION = v2025.01
+OVERLAYFS_TOOLS_SITE = https://github.com/kmxz/overlayfs-tools
+OVERLAYFS_TOOLS_SITE_METHOD = git
 
 OVERLAYFS_TOOLS_DEPENDENCIES += host-pkgconf
 
