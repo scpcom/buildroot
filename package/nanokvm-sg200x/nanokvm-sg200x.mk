@@ -4,11 +4,10 @@
 #
 ################################################################################
 
-NANOKVM_SG200X_VERSION = 2.3.4
-NANOKVM_SG200X_SUBLEVEL =
-NANOKVM_SG200X_BASE = nanokvm-skeleton-$(NANOKVM_SG200X_VERSION)$(NANOKVM_SG200X_SUBLEVEL)
-NANOKVM_SG200X_SOURCE = v$(NANOKVM_SG200X_VERSION)$(NANOKVM_SG200X_SUBLEVEL).zip
-NANOKVM_SG200X_SITE = https://github.com/scpcom/nanokvm-skeleton/archive/refs/tags
+NANOKVM_SG200X_VERSION = v2.3.4
+NANOKVM_SG200X_BASE = $(NANOKVM_SG200X_NAME)-$(NANOKVM_SG200X_VERSION)
+NANOKVM_SG200X_SITE = https://github.com/scpcom/nanokvm-skeleton
+NANOKVM_SG200X_SITE_METHOD = git
 NANOKVM_SG200X_UPDATE_URL = https://scpcom.github.io/nanokvm
 
 NANOKVM_SG200X_DEPENDENCIES += nanokvm-server
@@ -56,7 +55,7 @@ NANOKVM_SG200X_DUMMY_LIBS = \
 	libawb.so
 
 define NANOKVM_SG200X_EXTRACT_CMDS
-	$(UNZIP) -d $(@D) \
+	$(TAR) -C $(@D) -xzf \
 		$(NANOKVM_SG200X_DL_DIR)/$(NANOKVM_SG200X_SOURCE)
 	mv $(@D)/$(NANOKVM_SG200X_BASE) $(@D)/kvmapp
 	rm -f ${@D}/kvmapp/server/NanoKVM-Server
