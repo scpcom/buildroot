@@ -5,7 +5,8 @@
 ################################################################################
 
 MAIX_PY_VERSION = 49c149f5faadf3d6f1cd420cf2c5efd609300771
-MAIX_PY_SITE = $(call github,sipeed,MaixPy,$(MAIX_PY_VERSION))
+MAIX_PY_SITE = https://github.com/sipeed/MaixPy
+MAIX_PY_SITE_METHOD = git
 
 MAIX_PY_SAMPLE = vision/streaming
 
