@@ -4,11 +4,10 @@
 #
 ################################################################################
 
-MAIXCAM_SG200X_VERSION = 4.10.3
-MAIXCAM_SG200X_SUBLEVEL =
-MAIXCAM_SG200X_BASE = maixcam-skeleton-$(MAIXCAM_SG200X_VERSION)$(MAIXCAM_SG200X_SUBLEVEL)
-MAIXCAM_SG200X_SOURCE = v$(MAIXCAM_SG200X_VERSION)$(MAIXCAM_SG200X_SUBLEVEL).zip
-MAIXCAM_SG200X_SITE = https://github.com/scpcom/maixcam-skeleton/archive/refs/tags
+MAIXCAM_SG200X_VERSION = v4.10.3
+MAIXCAM_SG200X_BASE = $(MAIXCAM_SG200X_NAME)-$(MAIXCAM_SG200X_VERSION)
+MAIXCAM_SG200X_SITE = https://github.com/scpcom/maixcam-skeleton
+MAIXCAM_SG200X_SITE_METHOD = git
 
 MAIXCAM_SG200X_DEPENDENCIES += maix-cdk
 
@@ -17,7 +16,7 @@ MAIXCAM_SG200X_DEPENDENCIES += maix-py
 endif
 
 define MAIXCAM_SG200X_EXTRACT_CMDS
-	$(UNZIP) -d $(@D) \
+	$(TAR) -C $(@D) -xzf \
 		$(MAIXCAM_SG200X_DL_DIR)/$(MAIXCAM_SG200X_SOURCE)
 	mv $(@D)/$(MAIXCAM_SG200X_BASE) $(@D)/maixapp
 endef
