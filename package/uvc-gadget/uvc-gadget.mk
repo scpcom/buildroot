@@ -5,7 +5,8 @@
 ################################################################################
 
 UVC_GADGET_VERSION = 74522b25f982204c244357ca982a281d68352976
-UVC_GADGET_SITE = $(call github,wlhe,uvc-gadget,$(UVC_GADGET_VERSION))
+UVC_GADGET_SITE = https://github.com/wlhe/uvc-gadget
+UVC_GADGET_SITE_METHOD = git
 
 UVC_GADGET_LIBC = $(findstring musl,$(TOOLCHAIN_EXTERNAL_BIN)$(TOOLCHAIN_EXTERNAL_PREFIX))
 
