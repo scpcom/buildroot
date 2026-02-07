@@ -3,8 +3,6 @@ DUO_PINMUX_SITE = https://github.com/milkv-duo/duo-pinmux
 DUO_PINMUX_SITE_METHOD = git
 DUO_PINMUX_INSTALL_STAGING = YES
 
-BR_NO_CHECK_HASH_FOR += $(DUO_PINMUX_SOURCE)
-
 ifeq ($(BR2_PACKAGE_DUO_PINMUX),y)
 ifeq ($(BR2_PACKAGE_DUO_PINMUX_DUO),y)
     DUO_SRC_DIR = duo
