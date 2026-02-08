@@ -8,7 +8,7 @@ MAIX_CDK_VERSION = b29c951647df74e4efa55fd4454efb37e4554be0
 MAIX_CDK_SITE = https://github.com/sipeed/MaixCDK
 MAIX_CDK_SITE_METHOD = git
 
-MAIX_CDK_DL_PKGS_REF = 1c60539477058af78a0d00cf6ad112cd57bbbe31
+MAIX_CDK_DL_PKGS_REF = c378843eec5f1f0892b1e194d43fc8470d167306
 MAIX_CDK_DL_PKGS_URL = https://github.com/scpcom/maixcdk-dl-pkgs
 
 MAIX_CDK_PLATFORM = maixcam
