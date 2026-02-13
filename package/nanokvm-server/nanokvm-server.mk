@@ -12,6 +12,9 @@ NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm
 NANOKVM_SERVER_GO_VENDOR_REF = 4e35d0820f4a95290aca33402e9916f38f950f1e
 NANOKVM_SERVER_GO_VENDOR_URL = https://github.com/scpcom/nanokvm-server-vendor
 
+NANOKVM_SERVER_NODE_MODULES_REF = 6ab2f64b7a38b2ef47b4c77661c233e7d6237301
+NANOKVM_SERVER_NODE_MODULES_URL = https://github.com/scpcom/nanokvm-web-modules
+
 NANOKVM_SERVER_DEPENDENCIES = host-go host-nodejs host-python3
 
 ifeq ($(BR2_PACKAGE_MAIX_CDK),y)
@@ -185,6 +188,8 @@ define NANOKVM_SERVER_BUILD_CMDS
 	fi
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) && git clone --depth 1 $(NANOKVM_SERVER_GO_VENDOR_URL) vendor
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD)/vendor && git checkout $(NANOKVM_SERVER_GO_VENDOR_REF)
+	cd $(@D)/web && git clone --depth 1 $(NANOKVM_SERVER_NODE_MODULES_URL) node_modules
+	cd $(@D)/web/node_modules && git checkout $(NANOKVM_SERVER_NODE_MODULES_REF)
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
 	[ -e $(@D)/$(NANOKVM_SERVER_GOMOD)/vendor ] || GOPROXY=direct GOSUMDB="sum.golang.org" $(GO_BIN) mod tidy
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
@@ -196,12 +201,11 @@ define NANOKVM_SERVER_BUILD_CMDS
 	fi
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
 	CGO_ENABLED=1 $(NANOKVM_SERVER_GO_ENV) $(GO_BIN) build -mod vendor -x -ldflags="-extldflags '-Wl,-rpath,\$$ORIGIN/dl_lib'"
-	cd $(@D)/web ; \
-	$(HOST_COREPACK) install -g pnpm@$(NANOKVM_SERVER_PNPM_VERSION)+sha1.$(NANOKVM_SERVER_PNPM_SHA_SUM) ; \
-	$(HOST_COREPACK) use pnpm@$(NANOKVM_SERVER_PNPM_VERSION)+sha1.$(NANOKVM_SERVER_PNPM_SHA_SUM) ; \
-	$(HOST_COREPACK) pnpm install
-	cd $(@D)/web ; \
-	$(HOST_COREPACK) pnpm build
+	#cd $(@D)/web && \
+	#$(HOST_COREPACK) install -g pnpm@$(NANOKVM_SERVER_PNPM_VERSION)+sha1.$(NANOKVM_SERVER_PNPM_SHA_SUM) && \
+	#$(HOST_COREPACK) use pnpm@$(NANOKVM_SERVER_PNPM_VERSION)+sha1.$(NANOKVM_SERVER_PNPM_SHA_SUM)
+	cd $(@D)/web && $(HOST_COREPACK) pnpm install -r --offline
+	cd $(@D)/web && $(HOST_COREPACK) pnpm build
 endef
 
 define NANOKVM_SERVER_INSTALL_TARGET_CMDS
