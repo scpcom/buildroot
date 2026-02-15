@@ -12,5 +12,7 @@ PYTHON_WERKZEUG_LICENSE = BSD-3-Clause
 PYTHON_WERKZEUG_LICENSE_FILES = LICENSE.txt
 PYTHON_WERKZEUG_CPE_ID_VENDOR = palletsprojects
 PYTHON_WERKZEUG_CPE_ID_PRODUCT = werkzeug
+HOST_PYTHON_WERKZEUG_DEPENDENCIES = host-python-markupsafe
 
 $(eval $(python-package))
+$(eval $(host-python-package))
