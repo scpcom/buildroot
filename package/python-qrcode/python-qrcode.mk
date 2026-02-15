@@ -10,5 +10,7 @@ PYTHON_QRCODE_SITE = https://files.pythonhosted.org/packages/d7/db/6fc9631cac132
 PYTHON_QRCODE_SETUP_TYPE = poetry
 PYTHON_QRCODE_LICENSE = BSD-3-Clause
 PYTHON_QRCODE_LICENSE_FILES = LICENSE
+HOST_PYTHON_QRCODE_DEPENDENCIES = host-python-pillow
 
 $(eval $(python-package))
+$(eval $(host-python-package))
