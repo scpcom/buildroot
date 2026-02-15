@@ -14,6 +14,8 @@ PYTHON_PILLOW_CPE_ID_PRODUCT = pillow
 PYTHON_PILLOW_SETUP_TYPE = setuptools
 
 PYTHON_PILLOW_DEPENDENCIES = host-pkgconf
+HOST_PYTHON_PILLOW_DEPENDENCIES = host-pkgconf
+
 PYTHON_PILLOW_BUILD_OPTS = \
 	-Cplatform-guessing=disable \
 	-Cimagequant=disable \
@@ -76,3 +78,4 @@ PYTHON_PILLOW_BUILD_OPTS += -Czlib=disable
 endif
 
 $(eval $(python-package))
+$(eval $(host-python-package))
