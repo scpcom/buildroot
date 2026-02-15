@@ -12,5 +12,12 @@ PYTHON_FLASK_LICENSE = BSD-3-Clause
 PYTHON_FLASK_LICENSE_FILES = LICENSE.txt docs/license.rst
 PYTHON_FLASK_CPE_ID_VENDOR = palletsprojects
 PYTHON_FLASK_CPE_ID_PRODUCT = flask
+HOST_PYTHON_FLASK_DEPENDENCIES = \
+	host-python-blinker \
+	host-python-click \
+	host-python-jinja2 \
+	host-python-werkzeug \
+	host-python-itsdangerous
 
 $(eval $(python-package))
+$(eval $(host-python-package))
