@@ -12,3 +12,4 @@ PYTHON_ITSDANGEROUS_LICENSE = BSD-3-Clause
 PYTHON_ITSDANGEROUS_LICENSE_FILES = LICENSE.txt docs/license.rst
 
 $(eval $(python-package))
+$(eval $(host-python-package))
