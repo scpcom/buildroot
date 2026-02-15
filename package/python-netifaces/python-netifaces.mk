@@ -12,3 +12,4 @@ PYTHON_NETIFACES_LICENSE_FILES = LICENSE
 PYTHON_NETIFACES_SETUP_TYPE = setuptools
 
 $(eval $(python-package))
+$(eval $(host-python-package))
