@@ -1,0 +1,13 @@
+config BR2_PACKAGE_PYTHON_MAIXTOOL
+	bool "python-maixtool"
+	select BR2_PACKAGE_PYTHON_FLASK
+	select BR2_PACKAGE_PYTHON_NETIFACES
+	select BR2_PACKAGE_PYTHON_PILLOW
+	select BR2_PACKAGE_PYTHON_PYYAML
+	select BR2_PACKAGE_PYTHON_PROGRESS
+	select BR2_PACKAGE_PYTHON_QRCODE
+	select BR2_PACKAGE_PYTHON_REQUESTS
+	help
+	  Tools for MaixPy and MaixCDK.
+
+	  https://github.com/Sipeed/MaixCDK

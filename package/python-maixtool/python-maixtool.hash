@@ -1,0 +1,5 @@
+# md5, sha256 from https://pypi.org/pypi/maixtool/json
+md5  bbc7a9cc70cf0c8b32fd90a540efe6cc  maixtool-1.4.4.tar.gz
+sha256  8a9f8bf1e0fbd6289e272351f1652c04d03898defc0192a4e6a1bde2d2a6dead  maixtool-1.4.4.tar.gz
+# Locally computed sha256 checksums
+sha256  09e8a9bcec8067104652c168685ab0931e7868f9c8284b66f5ae6edae5f1130b  LICENSE
