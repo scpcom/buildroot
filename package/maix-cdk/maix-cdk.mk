@@ -20,6 +20,7 @@ MAIX_CDK_DEPENDENCIES =\
 	host-pkgconf \
 	host-python3 \
 	host-python-pip \
+	host-python-maixtool \
 	host-python-setuptools
 
 ifeq ($(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES),y)
@@ -237,7 +238,7 @@ define MAIX_CDK_BUILD_CMDS
 		rm -f $(@D)/components/3rd_party/cvi_tpu/component.py ; \
 	fi
 	cd $(@D)/ ; \
-	$(HOST_DIR)/bin/python3 -m pip install -r requirements.txt
+	#$(HOST_DIR)/bin/python3 -m pip install -r requirements.txt
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES)" = "Xy" ]; then \
 		cd $(@D)/examples/$(MAIX_CDK_SAMPLE)/ ; \
 		PATH=$(BR_PATH) $(HOST_DIR)/bin/maixcdk build -p $(MAIX_CDK_PLATFORM) ; \
