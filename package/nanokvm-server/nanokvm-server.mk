@@ -12,7 +12,7 @@ NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm
 NANOKVM_SERVER_GO_VENDOR_REF = 4e35d0820f4a95290aca33402e9916f38f950f1e
 NANOKVM_SERVER_GO_VENDOR_URL = https://github.com/scpcom/nanokvm-server-vendor
 
-NANOKVM_SERVER_NODE_MODULES_REF = 16f182c901974dbd9e703b69bf4228865092f6d6
+NANOKVM_SERVER_NODE_MODULES_REF = c4eb582cc201a0216645ec41d975d84df7955da4
 NANOKVM_SERVER_NODE_MODULES_URL = https://github.com/scpcom/nanokvm-web-modules
 
 NANOKVM_SERVER_DEPENDENCIES = host-go host-nodejs host-python3
@@ -48,6 +48,7 @@ NANOKVM_SERVER_PNPM_VERSION = 9.15.5
 NANOKVM_SERVER_PNPM_SHA_SUM = cb1f6372ef64e2ba352f2f46325adead1c99ff8f
 
 NANOKVM_SERVER_NODE_CACHE_DIR = $$HOME/.cache/node
+NANOKVM_SERVER_PNPM_CACHE_DIR = $$HOME/.cache/pnpm
 NANOKVM_SERVER_PNPM_SHARE_DIR = $$HOME/.local/share/pnpm
 
 NANOKVM_SERVER_GOMOD = server
@@ -198,6 +199,9 @@ define NANOKVM_SERVER_BUILD_CMDS
 	[ -e $(NANOKVM_SERVER_NODE_CACHE_DIR)/corepack ] || mv $(@D)/web/node_modules/corepack $(NANOKVM_SERVER_NODE_CACHE_DIR)/
 	[ -e $(NANOKVM_SERVER_NODE_CACHE_DIR)/corepack/v1 ] || ln -s . $(NANOKVM_SERVER_NODE_CACHE_DIR)/corepack/v1
 	rm -rf $(@D)/web/node_modules/corepack
+	mkdir -p $(NANOKVM_SERVER_PNPM_CACHE_DIR)
+	[ -e $(NANOKVM_SERVER_PNPM_CACHE_DIR)/metadata-v1.3 ] || mv $(@D)/web/node_modules/.cache/pnpm/metadata-v1.3 $(NANOKVM_SERVER_PNPM_CACHE_DIR)/
+	rm -rf $(@D)/web/node_modules/.cache/
 	mkdir -p $(NANOKVM_SERVER_PNPM_SHARE_DIR)
 	[ -e $(NANOKVM_SERVER_PNPM_SHARE_DIR)/store ] || mv $(@D)/web/node_modules/.local/share/pnpm/store $(NANOKVM_SERVER_PNPM_SHARE_DIR)/
 	rm -rf $(@D)/web/node_modules/.local/
