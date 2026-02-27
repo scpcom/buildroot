@@ -4,9 +4,24 @@ Date: Sun, 5 Oct 2025 19:23:17 +0200
 Subject: [PATCH] server: do not mount disk in cdrom mode
 
 ---
+ server/service/storage/image.go            |  3 +++
  web/src/pages/desktop/menu/image/index.tsx | 13 +++++++++++--
- 1 files changed, 10 insertions(+), 1 deletions(-)
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
+diff --git a/server/service/storage/image.go b/server/service/storage/image.go
+index 63360ed..c1a54d2 100644
+--- a/server/service/storage/image.go
++++ b/server/service/storage/image.go
+@@ -96,6 +96,9 @@ func (s *Service) MountImage(c *gin.Context) {
+ 	if image == "" {
+ 		image = imageNone
+ 	}
++	if image == imageNone && req.Cdrom {
++		image = "\n"
++	}
+ 
+ 	if err := os.WriteFile(mountDevice, []byte(image), 0o666); err != nil {
+ 		log.Errorf("mount file %s failed: %s", image, err)
 diff --git a/web/src/pages/desktop/menu/image/index.tsx b/web/src/pages/desktop/menu/image/index.tsx
 index ae0f499..584583a 100644
 --- a/web/src/pages/desktop/menu/image/index.tsx
