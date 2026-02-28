@@ -1,0 +1,100 @@
+From df7a598ea32f3bae2c162723c02ecec6b9945ac5 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sat, 28 Feb 2026 01:26:11 +0100
+Subject: [PATCH] server: add boot usb.disk0.cdrom flag
+
+---
+ kvmapp/system/init.d/S03usbdev  |  8 ++++++-
+ server/service/storage/image.go | 39 +++++++++++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+), 1 deletion(-)
+
+diff --git a/kvmapp/system/init.d/S03usbdev b/kvmapp/system/init.d/S03usbdev
+index e65bd33..7185abb 100755
+--- a/kvmapp/system/init.d/S03usbdev
++++ b/kvmapp/system/init.d/S03usbdev
+@@ -106,7 +106,13 @@ start_usb_dev(){
+             fi
+             echo "NanoKVM USB Mass Storage0520" > functions/mass_storage.disk0/lun.0/inquiry_string
+             disk=$(cat /boot/usb.disk0)
+-            if [ -z "${disk}" ]
++            if [ -e /boot/usb.disk0.cdrom ]
++            then
++                    echo "NanoKVM USB CD/DVD-ROM  0520" > functions/mass_storage.disk0/lun.0/inquiry_string
++                    echo 1 > functions/mass_storage.disk0/lun.0/ro
++                    echo 1 > functions/mass_storage.disk0/lun.0/cdrom
++                    cat /boot/usb.disk0.cdrom > functions/mass_storage.disk0/lun.0/file
++            elif [ -z "${disk}" ]
+             then
+                     # if [ ! -e /mnt/usbdisk.img ]
+                     # then
+diff --git a/server/service/storage/image.go b/server/service/storage/image.go
+index fa9fb89..bd695fd 100644
+--- a/server/service/storage/image.go
++++ b/server/service/storage/image.go
+@@ -1,6 +1,7 @@
+ package storage
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"os"
+ 	"os/exec"
+@@ -23,6 +24,7 @@ const (
+ 	mountDevice    = "/sys/kernel/config/usb_gadget/g0/functions/mass_storage.disk0/lun.0/file"
+ 	inquiryString  = "/sys/kernel/config/usb_gadget/g0/functions/mass_storage.disk0/lun.0/inquiry_string"
+ 	roFlag         = "/sys/kernel/config/usb_gadget/g0/functions/mass_storage.disk0/lun.0/ro"
++	DiskCdromFile  = "/boot/usb.disk0.cdrom"
+ )
+ 
+ func (s *Service) GetImages(c *gin.Context) {
+@@ -146,6 +148,11 @@ func (s *Service) MountImage(c *gin.Context) {
+ 		time.Sleep(100 * time.Millisecond)
+ 	}
+ 
++	if msg, err := setBootDiskCdrom(req.Cdrom); err != nil {
++		rsp.ErrRsp(c, -2, msg)
++		return
++	}
++
+ 	rsp.OkRsp(c)
+ 	log.Debugf("mount image %s success", req.File)
+ }
+@@ -221,3 +228,35 @@ func (s *Service) DeleteImage(c *gin.Context) {
+ 	rsp.OkRsp(c)
+ 	log.Debugf("delete image %s success", req.File)
+ }
++
++func setBootDiskCdrom(cdrom bool) (string, error) {
++	bootCdrom, _ := isFlagExist(DiskCdromFile)
++	if !bootCdrom && cdrom {
++		if err := os.WriteFile(DiskCdromFile, []byte("\n"), 0o666); err != nil {
++			log.Errorf("write cdrom flag file failed: %s", err)
++			return "write disable cdrom flag file failed", err
++		}
++	} else 	if bootCdrom && !cdrom {
++		if err := os.Remove(DiskCdromFile); err != nil {
++			log.Errorf("remove disable cdrom flag file failed: %s", err)
++			return "remove disable cdrom flag file failed", err
++		}
++	}
++
++	return "", nil
++}
++
++func isFlagExist(device string) (bool, error) {
++	_, err := os.Stat(device)
++
++	if err == nil {
++		return true, nil
++	}
++
++	if errors.Is(err, os.ErrNotExist) {
++		return false, nil
++	}
++
++	log.Errorf("check file %s err: %s", device, err)
++	return false, err
++}
+-- 
+2.34.1
+
