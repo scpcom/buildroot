@@ -4,15 +4,15 @@
 #
 ################################################################################
 
-NANOKVM_SERVER_VERSION = 4af32fc7032b9dde2f3efd4d917837eeca015a87
+NANOKVM_SERVER_VERSION = 9e1251ad6ac70e111295e7f746fcdd465e9146cb
 NANOKVM_SERVER_SITE = https://github.com/sipeed/NanoKVM
 NANOKVM_SERVER_SITE_METHOD = git
 NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm
 
-NANOKVM_SERVER_GO_VENDOR_REF = 4e35d0820f4a95290aca33402e9916f38f950f1e
+NANOKVM_SERVER_GO_VENDOR_REF = fd68bdc39cf813361c6d69e76c80f45b4df16c77
 NANOKVM_SERVER_GO_VENDOR_URL = https://github.com/scpcom/nanokvm-server-vendor
 
-NANOKVM_SERVER_NODE_MODULES_REF = 4c5ddf4c2a35d008c54f5aa58cf1503759fe35f5
+NANOKVM_SERVER_NODE_MODULES_REF = 378b363a3f2bee59303ad8fe366bac1fb15cc648
 NANOKVM_SERVER_NODE_MODULES_URL = https://github.com/scpcom/nanokvm-web-modules
 
 NANOKVM_SERVER_DEPENDENCIES = host-go host-nodejs host-python3
@@ -213,6 +213,8 @@ define NANOKVM_SERVER_BUILD_CMDS
 	mkdir -p $(NANOKVM_SERVER_PNPM_SHARE_DIR)
 	[ -e $(NANOKVM_SERVER_PNPM_SHARE_DIR)/store ] || mv $(@D)/web/node_modules/.local/share/pnpm/store $(NANOKVM_SERVER_PNPM_SHARE_DIR)/
 	rm -rf $(@D)/web/node_modules/.local/
+	#cd $(@D)/$(NANOKVM_SERVER_GOMOD) && GOPROXY=direct GOSUMDB="sum.golang.org" $(GO_BIN) mod vendor
+	#cd $(@D)/web && $(HOST_COREPACK) pnpm fetch
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
 	[ -e $(@D)/$(NANOKVM_SERVER_GOMOD)/vendor ] || GOPROXY=direct GOSUMDB="sum.golang.org" $(GO_BIN) mod tidy
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD) ; \
