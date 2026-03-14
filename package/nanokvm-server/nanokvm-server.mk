@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-NANOKVM_SERVER_VERSION = 9e1251ad6ac70e111295e7f746fcdd465e9146cb
+NANOKVM_SERVER_VERSION = 590db5b08c169c9ef415089fa7668d61e869e0f6
 NANOKVM_SERVER_SITE = https://github.com/sipeed/NanoKVM
 NANOKVM_SERVER_SITE_METHOD = git
 NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm
@@ -250,10 +250,15 @@ define NANOKVM_SERVER_INSTALL_TARGET_CMDS
 	else \
 		rm -f $(TARGET_DIR)/kvmapp/kvm_system/kvm_system ; \
 	fi
+	if [ -e $(@D)/tools/logo_generator ]; then \
+		mkdir -pv $(TARGET_DIR)/kvmapp/tools/logo_generator/ ; \
+		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/tools/logo_generator/logo_generator.py $(TARGET_DIR)/kvmapp/tools/logo_generator/ ; \
+		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/tools/logo_generator/readme.md $(TARGET_DIR)/kvmapp/tools/logo_generator/ ; \
+	fi
 	if [ -e $(@D)/tools/nanokvm_update_edid ]; then \
-		mkdir -pv $(TARGET_DIR)/kvmapp/tools/ ; \
-		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/tools/nanokvm_update_edid/nanokvm_update_edid $(TARGET_DIR)/kvmapp/tools/ ; \
-		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/tools/nanokvm_update_edid/E21_NanoKVM.bin $(TARGET_DIR)/kvmapp/tools/ ; \
+		mkdir -pv $(TARGET_DIR)/kvmapp/tools/nanokvm_update_edid/ ; \
+		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/tools/nanokvm_update_edid/nanokvm_update_edid $(TARGET_DIR)/kvmapp/tools/nanokvm_update_edid/ ; \
+		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/tools/nanokvm_update_edid/E21_NanoKVM.bin $(TARGET_DIR)/kvmapp/tools/nanokvm_update_edid/ ; \
 	fi
 	mkdir -pv $(TARGET_DIR)/kvmapp/server/dl_lib/
 	rsync -r --verbose --links --safe-links --hard-links ${@D}/server/dl_lib/ $(TARGET_DIR)/kvmapp/server/dl_lib/
