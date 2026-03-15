@@ -254,6 +254,7 @@ define NANOKVM_SERVER_INSTALL_TARGET_CMDS
 		mkdir -pv $(TARGET_DIR)/kvmapp/tools/logo_generator/ ; \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/tools/logo_generator/logo_generator.py $(TARGET_DIR)/kvmapp/tools/logo_generator/ ; \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links ${@D}/tools/logo_generator/readme.md $(TARGET_DIR)/kvmapp/tools/logo_generator/ ; \
+		chmod ugo+rx $(TARGET_DIR)/kvmapp/tools/logo_generator/logo_generator.py ; \
 	fi
 	if [ -e $(@D)/tools/nanokvm_update_edid ]; then \
 		mkdir -pv $(TARGET_DIR)/kvmapp/tools/nanokvm_update_edid/ ; \
