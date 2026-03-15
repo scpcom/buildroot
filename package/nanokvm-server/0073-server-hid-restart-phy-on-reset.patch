@@ -1,0 +1,90 @@
+From 69b7429a65692745ca7915cc87050986e0429aba Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 15 Mar 2026 01:54:59 +0100
+Subject: [PATCH] server: hid: restart phy on reset
+
+---
+ server/service/hid/status.go | 47 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
+index d648107..0dbf880 100644
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
+@@ -26,6 +26,9 @@ const (
+ 	ModeHidWoW  = "wow"
+ 
+ 	CviUsbOtgRole     = "/proc/cviusb/otg_role"
++	DwcUsbPath        = "/sys/bus/platform/drivers/dwc2"
++	DwcUsbDevice      = "4340000.usb"
++
+ 	HidGadgetPath     = "/sys/kernel/config/usb_gadget/g0"
+ 	HidConfPath       = "/sys/kernel/config/usb_gadget/g0/configs/c.1"
+ 	HidFuncPath       = "/sys/kernel/config/usb_gadget/g0/functions"
+@@ -253,12 +256,30 @@ func (s *Service) ResetHid(c *gin.Context) {
+ 		return
+ 	}
+ 
++	if _, err := restartPhy(); err != nil {
++		log.Errorf("restart phy failed: %s", err)
++		rsp.ErrRsp(c, -1, "restart phy failed")
++		return
++	}
++
++	if _, err := setOtgRole(false); err != nil {
++		log.Errorf("disable otg failed: %s", err)
++		rsp.ErrRsp(c, -1, "disable otg failed")
++		return
++	}
++
+ 	if err := enable(); err != nil {
+ 		log.Errorf("enable hid failed: %s", err)
+ 		rsp.ErrRsp(c, -1, "enable hid failed")
+ 		return
+ 	}
+ 
++	if _, err := setOtgRole(true); err != nil {
++		log.Errorf("enable otg failed: %s", err)
++		rsp.ErrRsp(c, -1, "enable otg failed")
++		return
++	}
++
+ 	rsp.OkRsp(c)
+ 	log.Debugf("reset hid success")
+ }
+@@ -786,6 +807,32 @@ func setOtgRole(devicemode bool) (string, error) {
+ 	return "", nil;
+ }
+ 
++func restartPhy() (string, error) {
++	dwcUsbUnbind := fmt.Sprintf("%s/%s", DwcUsbPath, "unbind")
++	dwcUsbBind := fmt.Sprintf("%s/%s", DwcUsbPath, "bind")
++	isCviUsb, _ := isFuncExist(CviUsbOtgRole)
++	isDwcUsb, _ := isFuncExist(DwcUsbPath)
++
++	// do not fail on non-cvi hardware
++	if !isCviUsb || !isDwcUsb {
++		return "", nil;
++	}
++
++	if err := os.WriteFile(dwcUsbUnbind, []byte(DwcUsbDevice), 0o666); err != nil {
++		log.Errorf("unbind usb phy failed: %s", err)
++		return "unbind usb phy failed", err
++	}
++
++	time.Sleep(1 * time.Second)
++
++	if err := os.WriteFile(dwcUsbBind, []byte(DwcUsbDevice), 0o666); err != nil {
++		log.Errorf("bind usb phy failed: %s", err)
++		return "bind usb phy failed", err
++	}
++
++	return "", nil;
++}
++
+ func isFuncExist(device string) (bool, error) {
+ 	_, err := os.Stat(device)
+ 
+-- 
+2.34.1
+
