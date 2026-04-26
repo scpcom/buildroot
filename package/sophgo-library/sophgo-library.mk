@@ -6,6 +6,9 @@ SOPHGO_LIBRARY_INSTALL_STAGING = YES
 define SOPHGO_LIBRARY_BUILD_CMDS
 	rm -f $(@D)/lib/lib*json*.so*
 	rm -f $(@D)/lib/libopencv_*.so
+	rm -f $(@D)/lib/libcrypto.so
+	rm -f $(@D)/lib/libssl.so
+	rm -f $(@D)/lib/libwebsockets.so
 	rm -f $(@D)/lib/libz.so*
 	rm -f $(@D)/opt/cvitek_tpu_sdk/lib/*.so*
 endef
