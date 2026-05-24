@@ -179,6 +179,9 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		rm -f $(@D)/components/3rd_party/opencv/component.py ; \
 		mkdir -pv $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
 		rsync -r --verbose --copy-dirlinks --copy-links --hard-links --exclude=build --exclude=test $(@D)/../harfbuzz-$(HARFBUZZ_VERSION)/ $(@D)/dl/extracted/harfbuzz_srcs/harfbuzz-$(MAIX_CDK_HARFBUZZ_VER)/ ; \
+		sed -i 's|APPEND ADD_INCLUDE "include"|APPEND ADD_INCLUDE "$(TARGET_DIR)/usr/include"|g' $(@D)/components/3rd_party/openssl/CMakeLists.txt ; \
+		sed -i 's|"so/maixcam/|"$(TARGET_DIR)/usr/lib/|g' $(@D)/components/3rd_party/openssl/CMakeLists.txt ; \
+		sed -i 's|"so/maixcam2/|"$(TARGET_DIR)/usr/lib/|g' $(@D)/components/3rd_party/openssl/CMakeLists.txt ; \
 		sed -i 's|if(CONFIG_TOOLCHAIN_PATH MATCHES "musl")|if(EXISTS "$(TARGET_DIR)/usr/lib/python$${py_ver_short}")|g' $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
 		sed -i 's|$${DL_EXTRACTED_PATH}/python3/python3_lib_maixcam_musl_3.11.6|$(TARGET_DIR)/usr|g' $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
 		sed -i 's|$${DL_EXTRACTED_PATH}/python3/python3.13_maixcam2|$(TARGET_DIR)/usr|g' $(@D)/components/3rd_party/python3/CMakeLists.txt ; \
