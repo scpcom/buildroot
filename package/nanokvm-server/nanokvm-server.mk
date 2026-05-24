@@ -12,7 +12,7 @@ NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm
 NANOKVM_SERVER_GO_VENDOR_REF = fd68bdc39cf813361c6d69e76c80f45b4df16c77
 NANOKVM_SERVER_GO_VENDOR_URL = https://github.com/scpcom/nanokvm-server-vendor
 
-NANOKVM_SERVER_NODE_MODULES_REF = b7893a224e8057932abae4dc55a9b9810a6f3409
+NANOKVM_SERVER_NODE_MODULES_REF = 9bc95af43547b533d4659d051b37dc9df87a3225
 NANOKVM_SERVER_NODE_MODULES_URL = https://github.com/scpcom/nanokvm-web-modules
 
 NANOKVM_SERVER_DEPENDENCIES = host-go host-nodejs host-python3
