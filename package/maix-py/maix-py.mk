@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-MAIX_PY_VERSION = 49c149f5faadf3d6f1cd420cf2c5efd609300771
+MAIX_PY_VERSION = 0e2d00aba63ff847c3dd4e5e42e87a0ff911d305
 MAIX_PY_SITE = https://github.com/sipeed/MaixPy
 MAIX_PY_SITE_METHOD = git
 
