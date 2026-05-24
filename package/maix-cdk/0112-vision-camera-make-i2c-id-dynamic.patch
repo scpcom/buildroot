@@ -41,7 +41,7 @@ index c60d098..e8b348f 100644
              int mclk_id = _get_mclk_id();
              if (mclk_id == 0) {
                  system("devmem 0x0300116C 32 0x5"); // MIPI RX 4N PINMUX MCLK0
-@@ -304,7 +314,7 @@ _retry:
+@@ -304,11 +314,11 @@ _retry:
              goto _retry;
          }
  
@@ -49,7 +49,12 @@ index c60d098..e8b348f 100644
 +        std::vector<int> addr_list = i2c_obj->scan();
          for (size_t i = 0; i < addr_list.size(); i++) {
              // log::info("i2c4 addr: 0x%02x", addr_list[i]);
-             switch (addr_list[i]) {
+             if (addr_list[i] == 0x21) {
+-                Bytes *data = i2c_obj.readfrom_mem(addr_list[0], 0xf0, 2);
++                Bytes *data = i2c_obj->readfrom_mem(addr_list[0], 0xf0, 2);
+                 if (data && data->size() == 2 && data->data[0] == 0x03 && data->data[1] == 0x0a) {
+                     // log::info("find gcore_gc030a, addr %#x", addr_list[i]);
+                     snprintf(name, sizeof(name), "gcore_gc030a");
 @@ -1589,7 +1599,7 @@ _error:
      {
          camera_priv_t *priv = (camera_priv_t *)_param;

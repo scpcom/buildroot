@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-MAIX_CDK_VERSION = b29c951647df74e4efa55fd4454efb37e4554be0
+MAIX_CDK_VERSION = d9741a207552b6e1a38eb247cf4bf62fd5df987d
 MAIX_CDK_SITE = https://github.com/sipeed/MaixCDK
 MAIX_CDK_SITE_METHOD = git
 
@@ -13,7 +13,8 @@ MAIX_CDK_DL_PKGS_URL = https://github.com/scpcom/maixcdk-dl-pkgs
 
 MAIX_CDK_PLATFORM = maixcam
 
-MAIX_CDK_SAMPLE = rtsp_demo
+#MAIX_CDK_SAMPLE = rtsp_demo
+MAIX_CDK_SAMPLE = stream_rtsp_demo
 
 MAIX_CDK_DEPENDENCIES =\
 	host-cmake \
@@ -152,6 +153,8 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 	@$(eval PYVER_PATCH=$(shell echo $(PYTHON3_VERSION) | cut -d '.' -f 3))
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES)" = "Xy" -a "$(MAIX_CDK_OPENCV_VER)-$(MAIX_CDK_TOOLCHAIN_ARCH)-$(MAIX_CDK_TOOLCHAIN_LIBC)" != "$(OPENCV4_VERSION)-riscv64-musl" ]; then \
 		sed -i 's|set(alsa_lib_dir "lib")|set(alsa_lib_dir "$(TARGET_DIR)/usr/lib")|g' $(@D)/components/3rd_party/alsa_lib/CMakeLists.txt ; \
+		sed -i 's|$${alsa_lib_dir}/maixcam/|$${alsa_lib_dir}/|g' $(@D)/components/3rd_party/alsa_lib/CMakeLists.txt ; \
+		sed -i 's|$${alsa_lib_dir}/maixcam2/|$${alsa_lib_dir}/|g' $(@D)/components/3rd_party/alsa_lib/CMakeLists.txt ; \
 		sed -i 's|set(alsa_lib_include_dir "include")|set(alsa_lib_include_dir "$(TARGET_DIR)/usr/include")|g' $(@D)/components/3rd_party/alsa_lib/CMakeLists.txt ; \
 		sed -i 's|set(src_path "$${ffmpeg_unzip_path}/ffmpeg")|set(src_path "$(TARGET_DIR)/usr")|g' $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		[ -e $(TARGET_DIR)/usr/lib/libavresample.so ] || sed -i /libavresample.so/d $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
@@ -256,7 +259,7 @@ define MAIX_CDK_BUILD_CMDS
 	if [ "X$(BR2_PACKAGE_MAIX_CDK_ALL_PROJECTS)" = "Xy" -a -e $(@D)/distapps.sh -a -e $(@D)/projects/build_all.sh ]; then \
 		chmod +x $(@D)/projects/build_all.sh ; \
 		cd $(@D)/projects/ ; \
-		PATH=$(BR_PATH) ./build_all.sh ; \
+		PATH=$(BR_PATH) ./build_all.sh $(MAIX_CDK_PLATFORM) ; \
 	fi
 	if [ ! -e $(@D)/components/nn ]; then \
 		rm -rf $(@D)/examples/bytetrack_demo/ ; \

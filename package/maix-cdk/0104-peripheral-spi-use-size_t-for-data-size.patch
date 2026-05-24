@@ -4,13 +4,13 @@ Date: Thu, 26 Dec 2024 01:58:35 +0100
 Subject: [PATCH 2/3] peripheral: spi: use size_t for data size
 
 ---
- components/peripheral/port/maixcam/maix_spi.cpp | 2 +-
+ components/peripheral/port/linux_common/maix_spi.cpp | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/components/peripheral/port/maixcam/maix_spi.cpp b/components/peripheral/port/maixcam/maix_spi.cpp
+diff --git a/components/peripheral/port/linux_common/maix_spi.cpp b/components/peripheral/port/linux_common/maix_spi.cpp
 index 89527cc..030059b 100755
---- a/components/peripheral/port/maixcam/maix_spi.cpp
-+++ b/components/peripheral/port/maixcam/maix_spi.cpp
+--- a/components/peripheral/port/linux_common/maix_spi.cpp
++++ b/components/peripheral/port/linux_common/maix_spi.cpp
 @@ -197,7 +197,7 @@ namespace maix::peripheral::spi
          if (read_len <= 0)
              return nullptr;
