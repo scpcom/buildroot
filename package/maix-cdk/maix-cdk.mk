@@ -156,6 +156,9 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		sed -i 's|$${alsa_lib_dir}/maixcam/|$${alsa_lib_dir}/|g' $(@D)/components/3rd_party/alsa_lib/CMakeLists.txt ; \
 		sed -i 's|$${alsa_lib_dir}/maixcam2/|$${alsa_lib_dir}/|g' $(@D)/components/3rd_party/alsa_lib/CMakeLists.txt ; \
 		sed -i 's|set(alsa_lib_include_dir "include")|set(alsa_lib_include_dir "$(TARGET_DIR)/usr/include")|g' $(@D)/components/3rd_party/alsa_lib/CMakeLists.txt ; \
+		sed -i 's|CONFIG_LIBDATACHANNEL_COMPILE_FROM_SOURCE|1|g' $(@D)/components/3rd_party/datachannel/CMakeLists.txt ; \
+		sed -i 's|if .CONFIG_LIBDATACHANNEL_COMPILE_FROM_SOURCE. not in confs|if 0|g' $(@D)/components/3rd_party/datachannel/component.py ; \
+		sed -i 's|"$${srcs_path}/include" "$${srcs_path}/src"|"$${srcs_path}/include" "$${srcs_path}/include/rtc" "$${srcs_path}/src"|g' $(@D)/components/3rd_party/datachannel/CMakeLists.txt ; \
 		sed -i 's|set(src_path "$${ffmpeg_unzip_path}/ffmpeg")|set(src_path "$(TARGET_DIR)/usr")|g' $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		[ -e $(TARGET_DIR)/usr/lib/libavresample.so ] || sed -i /libavresample.so/d $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
 		sed -i 's|#.*                            $${src_path}/lib/libswscale.so|#                            $${non_path}/lib/libswscale.so|g' $(@D)/components/3rd_party/FFmpeg/CMakeLists.txt ; \
