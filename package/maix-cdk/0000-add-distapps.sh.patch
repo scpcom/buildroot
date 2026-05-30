@@ -13,7 +13,7 @@ new file mode 100755
 index 0000000..723b1d7
 --- /dev/null
 +++ b/distapps.sh
-@@ -0,0 +1,44 @@
+@@ -0,0 +1,47 @@
 +#!/bin/sh
 +m=`dirname $0`
 +t=${m}/dist
@@ -30,14 +30,17 @@ index 0000000..723b1d7
 +for d in $m/projects/app_* ; do
 +  a=`dirname $d`
 +  b=`basename $d | cut -d '_' -f 2-`
-+  #if [ ! -e ${d}/dist/${b}_release/${b} ]; then
-+  if [  -e ${a}/apps/${b}/${b} ]; then
++  r=${a}/apps/${b}
++  if [ -e ${d}/dist/${b}_release/${b} -a ! -e ${r}/${b} ]; then
++    r=${d}/dist/${b}_release
++  fi
++  if [ -e ${r}/${b} ]; then
 +    echo $b
 +    mkdir ${t}/${b}
-+    rsync -avpPxH ${a}/apps/${b}/ ${t}/${b}/
++    rsync -avpPxH ${r}/ ${t}/${b}/
 +    chmod +x ${t}/${b}/${b}
 +    if [ -d ${t}/${b}/dl_lib ]; then
-+      rsync -avpPxH ${a}/apps/${b}/dl_lib/ ${l}/
++      rsync -avpPxH ${r}/dl_lib/ ${l}/
 +      rm -rf ${t}/${b}/dl_lib/
 +      ln -s ../../lib ${t}/${b}/dl_lib
 +    fi
