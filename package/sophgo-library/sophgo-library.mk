@@ -11,17 +11,21 @@ define SOPHGO_LIBRARY_BUILD_CMDS
 	rm -f $(@D)/lib/libwebsockets.so
 	rm -f $(@D)/lib/libz.so*
 	rm -f $(@D)/opt/cvitek_tpu_sdk/lib/*.so*
+	mkdir -p $(@D)/staging_lib
+	cp -a $(@D)/lib/* $(@D)/staging_lib/
+	rm -f $(@D)/staging_lib/libcrypto.so*
+	rm -f $(@D)/staging_lib/libssl.so*
 endef
 
 define SOPHGO_LIBRARY_INSTALL_STAGING_CMDS
-	cp -a $(@D)/lib/* $(STAGING_DIR)/usr/lib/
+	cp -a $(@D)/staging_lib/* $(STAGING_DIR)/usr/lib/
 endef
 
 define SOPHGO_LIBRARY_INSTALL_TARGET_CMDS
 	$(Q)mkdir -p $(TARGET_DIR)/mnt/system/lib
 	cp -a $(@D)/lib/* $(TARGET_DIR)/mnt/system/lib/
 	if [ -e $(@D)/opt ]; then \
-		$(Q)mkdir -p $(TARGET_DIR)/mnt/system/opt ; \
+		mkdir -p $(TARGET_DIR)/mnt/system/opt && \
 		rsync -r --verbose --links --safe-links --hard-links $(@D)/opt/ $(TARGET_DIR)/mnt/system/opt/ ; \
 	fi
 endef
