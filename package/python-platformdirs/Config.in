@@ -1,0 +1,6 @@
+config BR2_PACKAGE_PYTHON_PLATFORMDIRS
+	bool "python-platformdirs"
+	help
+	  Tools for MaixPy and MaixCDK.
+
+	  https://github.com/Sipeed/MaixCDK
