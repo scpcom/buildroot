@@ -1,0 +1,7 @@
+config BR2_PACKAGE_PYTHON_MDIT_PY_PLUGINS
+	bool "python-mdit-py-plugins"
+	select BR2_PACKAGE_PYTHON_MARKDOWN_IT_PY
+	help
+	  Tools for MaixPy and MaixCDK.
+
+	  https://github.com/Sipeed/MaixCDK
