@@ -1,0 +1,13 @@
+config BR2_PACKAGE_PYTHON_TEXTUAL
+	bool "python-textual"
+	select BR2_PACKAGE_PYTHON_MARKDOWN_IT_PY
+	select BR2_PACKAGE_PYTHON_MDIT_PY_PLUGINS
+	select BR2_PACKAGE_PYTHON_PLATFORMDIRS
+	select BR2_PACKAGE_PYTHON_PYGMENTS
+	select BR2_PACKAGE_PYTHON_RICH
+	select BR2_PACKAGE_PYTHON_TYPING_EXTENSIONS
+	select BR2_PACKAGE_PYTHON_ZIPP
+	help
+	  Build cross-platform user interfaces with a simple Python API.
+
+	  https://github.com/Textualize/textual
