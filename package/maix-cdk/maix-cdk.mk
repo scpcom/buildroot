@@ -59,10 +59,12 @@ MAIX_CDK_TOOLCHAIN_CHIP := CV181X
 endif
 
 MAIX_CDK_HARFBUZZ_VER = 8.2.1
+MAIX_CDK_MEDIA_SERVER_VER = 1.0.2
 MAIX_CDK_OPENCV_VER = 4.9.0
 
 MAIX_CDK_EXT_MIDDLEWARE = $(realpath $(TOPDIR)/../middleware)
 MAIX_CDK_EXT_MAIXCAM_LIB = sample/test_mmf/maixcam_lib/release.linux/libmaixcam_lib.so
+MAIX_CDK_EXT_MEDIA_SERVER = $(MAIX_CDK_EXT_MIDDLEWARE)/sample/test_mmf/media_server-1.0.x
 MAIX_CDK_EXT_OSDRV = $(realpath $(TOPDIR)/../osdrv)
 
 MAIX_CDK_MIDDLEWARE = components/3rd_party/sophgo-middleware/sophgo-middleware
@@ -167,6 +169,20 @@ define MAIX_CDK_POST_EXTRACT_FIXUP
 		rm -f $(@D)/components/3rd_party/FFmpeg/component.py ; \
 		sed -i s/'CONFIG_COMPONENTS_COMPILE_FROM_SOURCE'/'1'/g $(@D)/components/3rd_party/harfbuzz/CMakeLists.txt ; \
 		rm -f $(@D)/components/3rd_party/harfbuzz/component.py ; \
+		rm -f $(@D)/components/3rd_party/media_server/component.py && \
+		mkdir -pv $(@D)/dl/extracted/media_server/media_server-$(MAIX_CDK_MEDIA_SERVER_VER)/ && \
+		for i in $(MAIX_CDK_EXT_MEDIA_SERVER)/*/*/include ; do \
+			d=$$(dirname $$i) ; \
+			b=$$(basename $$d) ; \
+			d=$$(dirname $$d) ; \
+			a=$$(basename $$d) ; \
+			mkdir -p $(@D)/dl/extracted/media_server/media_server-$(MAIX_CDK_MEDIA_SERVER_VER)/include/$$a/$$b ; \
+			rsync -avpPxH $(MAIX_CDK_EXT_MEDIA_SERVER)/$$a/$$b/include/ $(@D)/dl/extracted/media_server/media_server-$(MAIX_CDK_MEDIA_SERVER_VER)/include/$$a/$$b/include/ ; \
+		done && \
+		mkdir -p $(@D)/dl/extracted/media_server/media_server-$(MAIX_CDK_MEDIA_SERVER_VER)/include/sdk/ && \
+		rsync -avpPxH $(MAIX_CDK_EXT_MEDIA_SERVER)/sdk/include/ $(@D)/dl/extracted/media_server/media_server-$(MAIX_CDK_MEDIA_SERVER_VER)/include/sdk/include/ && \
+		mkdir -pv $(@D)/dl/extracted/media_server/media_server-$(MAIX_CDK_MEDIA_SERVER_VER)/lib/ && \
+		rsync -avpPxH $(MAIX_CDK_EXT_MEDIA_SERVER)/*/*/release.linux/lib*.a $(@D)/dl/extracted/media_server/media_server-$(MAIX_CDK_MEDIA_SERVER_VER)/lib/ && \
 		sed -i 's|EXISTS "$${CMAKE_CURRENT_LIST_DIR}/opencv4_lib_maixcam"|EXISTS "$(TARGET_DIR)/usr"|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i 's|opencv_lib_dir "$${CMAKE_CURRENT_LIST_DIR}/opencv4_lib_maixcam"|opencv_lib_dir "$(TARGET_DIR)/usr"|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
 		sed -i 's|opencv_lib_dir "$${DL_EXTRACTED_PATH}/opencv/opencv4/opencv4_lib_maixcam_musl_$${version_str}"|opencv_lib_dir "$(TARGET_DIR)/usr"|g'  $(@D)/components/3rd_party/opencv/CMakeLists.txt ; \
