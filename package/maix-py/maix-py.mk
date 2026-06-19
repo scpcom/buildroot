@@ -14,7 +14,6 @@ MAIX_PY_DEPENDENCIES =\
 	host-cmake \
 	host-pkgconf \
 	host-python3 \
-	host-python-pip \
 	host-python-setuptools
 
 MAIX_PY_DEPENDENCIES +=\
