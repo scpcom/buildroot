@@ -1,0 +1,37 @@
+From 2b1150f98966906432caa008251b06904894778f Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Fri, 19 Jun 2026 21:11:26 +0200
+Subject: [PATCH] install_env: do not use pip
+
+---
+ tools/cmds/install_env.py | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/tools/cmds/install_env.py b/tools/cmds/install_env.py
+index 8d39d7fe..7e95b609 100644
+--- a/tools/cmds/install_env.py
++++ b/tools/cmds/install_env.py
+@@ -7,7 +7,6 @@
+ import argparse
+ import os
+ import subprocess
+-import pip
+ 
+ parser = argparse.ArgumentParser(prog="install_env", description="install python packages for project", add_help=False)
+ 
+@@ -29,11 +28,7 @@ def main(vars):
+             "project_args": project_args,
+             "configs": configs,
+     '''
+-    # install python packages according to sdk_path/requirements.txt
+-    if vars["project_args"].index_url:
+-        pip.main(["install", "-i", vars["project_args"].index_url, "-r", os.path.join(vars["sdk_path"], "requirements.txt")])
+-    else:
+-        pip.main(["install", "-r", os.path.join(vars["sdk_path"], "requirements.txt")])
++    # please install python packages manually according to sdk_path/requirements.txt
+ 
+ # args = parser.parse_args()
+ if __name__ == '__main__':
+-- 
+2.34.1
+

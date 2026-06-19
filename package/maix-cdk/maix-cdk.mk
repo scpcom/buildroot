@@ -20,9 +20,7 @@ MAIX_CDK_DEPENDENCIES =\
 	host-cmake \
 	host-pkgconf \
 	host-python3 \
-	host-python-pip \
-	host-python-maixtool \
-	host-python-setuptools
+	host-python-maixtool
 
 ifeq ($(BR2_PACKAGE_MAIX_CDK_ALL_DEPENDENCIES),y)
 MAIX_CDK_DEPENDENCIES +=\
