@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-NANOKVM_SG200X_VERSION = v2.4.0
+NANOKVM_SG200X_VERSION = v2.4.3
 NANOKVM_SG200X_BASE = $(NANOKVM_SG200X_NAME)-$(NANOKVM_SG200X_VERSION)
 NANOKVM_SG200X_SITE = https://github.com/scpcom/nanokvm-skeleton
 NANOKVM_SG200X_SITE_METHOD = git
