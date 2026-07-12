@@ -35,7 +35,7 @@ index b8c5b99..ecff9fe 100644
 -                kvmv_cfg.vpss_height = _height;
 +                kvmv_cfg.vpss_width = _new_width;
 +                kvmv_cfg.vpss_height = _new_height;
-                 
+ 
                  cam->set_resolution(kvmv_cfg.vpss_width, kvmv_cfg.vpss_height);
                  kvmv_cfg.reinit_flag = 1;
 -- 

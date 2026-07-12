@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-NANOKVM_SERVER_VERSION = aa0546ff3753fe243517f401d4d642793d517c9e
+NANOKVM_SERVER_VERSION = 3b2ba7c0c1214f44da9d328f90bbdd025fac0413
 NANOKVM_SERVER_SITE = https://github.com/sipeed/NanoKVM
 NANOKVM_SERVER_SITE_METHOD = git
 NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm

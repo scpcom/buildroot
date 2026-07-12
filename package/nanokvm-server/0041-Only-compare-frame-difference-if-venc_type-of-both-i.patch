@@ -14,7 +14,7 @@ index d8df2ff..d445728 100644
 @@ -1860,7 +1860,7 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
                  if(frame_undetact_count == kvmv_cfg.frame_detact){
                      frame_undetact_count = 0;
-     
+ 
 -                    if(frame_changed(img) == 0){
 +                    if(kvmv_cfg.venc_type == VENC_MJPEG && frame_changed(img) == 0){
                          debug("[kvmv]frame not changed...\n");

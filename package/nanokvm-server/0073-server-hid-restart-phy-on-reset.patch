@@ -21,37 +21,33 @@ index d648107..0dbf880 100644
  	HidGadgetPath     = "/sys/kernel/config/usb_gadget/g0"
  	HidConfPath       = "/sys/kernel/config/usb_gadget/g0/configs/c.1"
  	HidFuncPath       = "/sys/kernel/config/usb_gadget/g0/functions"
-@@ -253,12 +256,30 @@ func (s *Service) ResetHid(c *gin.Context) {
- 		return
+@@ -253,11 +256,26 @@ func (s *Service) ResetHid(c *gin.Context) {
+ 		return fmt.Errorf("restart usb phy: %w", err)
  	}
  
 +	if _, err := restartPhy(); err != nil {
 +		log.Errorf("restart phy failed: %s", err)
-+		rsp.ErrRsp(c, -1, "restart phy failed")
-+		return
++		return fmt.Errorf("restart usb phy: %w", err)
 +	}
 +
 +	if _, err := setOtgRole(false); err != nil {
 +		log.Errorf("disable otg failed: %s", err)
-+		rsp.ErrRsp(c, -1, "disable otg failed")
-+		return
++		return fmt.Errorf("restart usb phy: %w", err)
 +	}
 +
  	if err := enable(); err != nil {
  		log.Errorf("enable hid failed: %s", err)
- 		rsp.ErrRsp(c, -1, "enable hid failed")
- 		return
+ 		return fmt.Errorf("restart usb phy: %w", err)
  	}
  
 +	if _, err := setOtgRole(true); err != nil {
 +		log.Errorf("enable otg failed: %s", err)
-+		rsp.ErrRsp(c, -1, "enable otg failed")
-+		return
++		return fmt.Errorf("restart usb phy: %w", err)
 +	}
 +
- 	rsp.OkRsp(c)
- 	log.Debugf("reset hid success")
- }
+ 	if err := h.OpenNoLockWithRetry(hidReopenTimeout, hidReopenRetryDelay); err != nil {
+ 		return fmt.Errorf("reopen HID devices after usb phy reset: %w", err)
+ 	}
 @@ -786,6 +807,32 @@ func setOtgRole(devicemode bool) (string, error) {
  	return "", nil;
  }

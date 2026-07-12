@@ -201,7 +201,7 @@ index 0afd8f8..8f7af14 100644
  
  uint16_t hdmi_res_list[][2] = {
 @@ -1408,6 +1576,14 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
-         if (kvmv_cfg.reinit_flag == 1) { 
+         if (kvmv_cfg.reinit_flag == 1) {
              cam->hmirror(1);
              cam->vflip(1);
 +            if (kvmv_cfg.no_signal_img != NULL) delete kvmv_cfg.no_signal_img;
@@ -218,7 +218,7 @@ index 0afd8f8..8f7af14 100644
 @@ -1438,6 +1606,9 @@
          image::Image *img = cam->read();
          // debug("[kvmv]read img: %d \r\n", (int)(time::time_ms() - start_time));
-         
+ 
 +        if(img == NULL && kvmv_cfg.no_signal_img != NULL) {
 +                img = kvmv_cfg.no_signal_img->copy();
 +        }

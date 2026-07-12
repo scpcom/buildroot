@@ -84,26 +84,21 @@ index 08c06a1..f244238 100644
  func (s *Service) ResetHid(c *gin.Context) {
  	var rsp proto.Response
  
-@@ -99,11 +157,16 @@ func (s *Service) ResetHid(c *gin.Context) {
- 		h.Unlock()
- 	}()
+@@ -99,8 +157,14 @@ func (s *Service) ResetHid(c *gin.Context) {
+ 	h.CloseNoLock()
+ 	defer h.Unlock()
  
 -	command := fmt.Sprintf("%s restart_phy", USBDevScript)
--	err := exec.Command("sh", "-c", command).Run()
--	if err != nil {
--		log.Errorf("failed to reset hid: %v", err)
--		rsp.ErrRsp(c, -1, "failed to reset hid")
+-	if err := exec.Command("sh", "-c", command).Run(); err != nil {
 +	// reset USB
 +	if err := disable(); err != nil {
 +		log.Errorf("disable hid failed: %s", err)
-+		rsp.ErrRsp(c, -1, "disable hid failed")
-+		return
++		return fmt.Errorf("restart usb phy: %w", err)
 +	}
 +
 +	if err := enable(); err != nil {
 +		log.Errorf("enable hid failed: %s", err)
-+		rsp.ErrRsp(c, -1, "enable hid failed")
- 		return
+ 		return fmt.Errorf("restart usb phy: %w", err)
  	}
  
 -- 

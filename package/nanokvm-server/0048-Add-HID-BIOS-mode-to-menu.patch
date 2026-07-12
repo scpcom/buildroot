@@ -140,7 +140,7 @@ index 0888003..4f46ffb 100644
        resetHid: 'HID zurücksetzen',
 +      biosHid: 'HID BIOS-Modus',
        hidOnly: {
-         title: 'HID-Only Modus',
+         title: 'HID-Only-Modus',
          desc: 'Wenn Ihre Maus und Tastatur nicht mehr reagieren und das Zurücksetzen der HID-Verbindung nicht hilft, könnte es sich um ein Kompatibilitätsproblem zwischen dem NanoKVM und dem Gerät handeln. Versuchen Sie, den HID-Only Modus zu aktivieren, um die Kompatibilität zu verbessern.',
 diff --git a/web/src/i18n/locales/en.ts b/web/src/i18n/locales/en.ts
 index 534d4f0..fe0cec3 100644
