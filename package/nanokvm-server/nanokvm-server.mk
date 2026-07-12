@@ -12,7 +12,7 @@ NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm
 NANOKVM_SERVER_GO_VENDOR_REF = fd68bdc39cf813361c6d69e76c80f45b4df16c77
 NANOKVM_SERVER_GO_VENDOR_URL = https://github.com/scpcom/nanokvm-server-vendor
 
-NANOKVM_SERVER_NODE_MODULES_REF = 9bc95af43547b533d4659d051b37dc9df87a3225
+NANOKVM_SERVER_NODE_MODULES_REF = 61dcbeed4717a573c48d5f13e8d03ba4062734c2
 NANOKVM_SERVER_NODE_MODULES_URL = https://github.com/scpcom/nanokvm-web-modules
 
 NANOKVM_SERVER_DEPENDENCIES = host-go host-nodejs host-python3
@@ -52,8 +52,9 @@ HOST_NODEJS_BIN_ENV = $(HOST_CONFIGURE_OPTS) \
 
 HOST_COREPACK = $(HOST_NODEJS_BIN_ENV) $(HOST_DIR)/bin/corepack
 
-NANOKVM_SERVER_PNPM_VERSION = 9.15.5
-NANOKVM_SERVER_PNPM_SHA_SUM = cb1f6372ef64e2ba352f2f46325adead1c99ff8f
+NANOKVM_SERVER_PNPM_VERSION = 10.29.3
+# wget -q -O- https://registry.npmjs.org/pnpm | jq -C '.versions."10.29.3".dist.shasum
+NANOKVM_SERVER_PNPM_SHA_SUM = f7315fb659932216d489e3ed4c14f47bc58ec6c6
 
 NANOKVM_SERVER_NODE_CACHE_DIR = $(NANOKVM_SERVER_XDG_CACHE_DIR)/node
 NANOKVM_SERVER_PNPM_CACHE_DIR = $(NANOKVM_SERVER_XDG_CACHE_DIR)/pnpm
@@ -202,7 +203,7 @@ define NANOKVM_SERVER_BUILD_CMDS
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD)/vendor && git checkout $(NANOKVM_SERVER_GO_VENDOR_REF)
 	cd $(@D)/web && git clone --depth 1 $(NANOKVM_SERVER_NODE_MODULES_URL) node_modules
 	cd $(@D)/web/node_modules && git checkout $(NANOKVM_SERVER_NODE_MODULES_REF)
-	cd $(@D)/web && sed -i 's|^storeDir: .*|storeDir: '$(NANOKVM_SERVER_PNPM_SHARE_DIR)'/store/v3|g' node_modules/.modules.yaml
+	cd $(@D)/web && sed -i 's|^storeDir: .*|storeDir: '$(NANOKVM_SERVER_PNPM_SHARE_DIR)'/store/v10|g' node_modules/.modules.yaml
 	mkdir -p $(NANOKVM_SERVER_NODE_CACHE_DIR)
 	[ -e $(NANOKVM_SERVER_NODE_CACHE_DIR)/corepack ] || mv $(@D)/web/node_modules/.cache/node/corepack $(NANOKVM_SERVER_NODE_CACHE_DIR)/
 	[ -e $(NANOKVM_SERVER_NODE_CACHE_DIR)/corepack/v1 ] || ln -s . $(NANOKVM_SERVER_NODE_CACHE_DIR)/corepack/v1
@@ -229,7 +230,8 @@ define NANOKVM_SERVER_BUILD_CMDS
 	#cd $(@D)/web && \
 	#$(HOST_COREPACK) install -g pnpm@$(NANOKVM_SERVER_PNPM_VERSION)+sha1.$(NANOKVM_SERVER_PNPM_SHA_SUM) && \#
 	cd $(@D)/web && $(HOST_COREPACK) use pnpm@$(NANOKVM_SERVER_PNPM_VERSION)+sha1.$(NANOKVM_SERVER_PNPM_SHA_SUM)
-	cd $(@D)/web && $(HOST_COREPACK) pnpm install --store-dir $(NANOKVM_SERVER_PNPM_SHARE_DIR)/store/v3 -r --offline
+	#cd $(@D)/web && $(HOST_COREPACK) pnpm fetch --store-dir $(NANOKVM_SERVER_PNPM_SHARE_DIR)/store/v10
+	cd $(@D)/web && $(HOST_COREPACK) pnpm install --store-dir $(NANOKVM_SERVER_PNPM_SHARE_DIR)/store/v10 -r --offline
 	cd $(@D)/web && $(HOST_COREPACK) pnpm build
 endef
 
