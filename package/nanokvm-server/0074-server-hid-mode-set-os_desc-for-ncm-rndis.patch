@@ -1,0 +1,162 @@
+From 0a7c891984b979f9589b4700934027f1d828911d Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Tue, 14 Jul 2026 00:12:21 +0200
+Subject: [PATCH] server: hid: mode: set os_desc for ncm/rndis
+
+---
+ server/service/hid/status.go | 104 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 104 insertions(+)
+
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
+index a110a67..75cf671 100644
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
+@@ -537,6 +537,9 @@ func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 	devFlag := "0x0510"
+ 	idVen := "0x3346"
+ 	idPrd := "0x1009"
++	devCls := "0xEF"
++	devSub := "0x02"
++	devPrt := "0x01"
+ 	maxPkt := "0x40"
+ 	strVen := "sipeed"
+ 	strPrd := "NanoKVM"
+@@ -580,6 +583,9 @@ func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 	hidBcdDev := fmt.Sprintf("%s/%s", HidGadgetPath, "bcdDevice")
+ 	hidIdVen := fmt.Sprintf("%s/%s", HidGadgetPath, "idVendor")
+ 	hidIdPrd := fmt.Sprintf("%s/%s", HidGadgetPath, "idProduct")
++	hidDevCls := fmt.Sprintf("%s/%s", HidGadgetPath, "bDeviceClass")
++	hidDevSub := fmt.Sprintf("%s/%s", HidGadgetPath, "bDeviceSubClass")
++	hidDevPrt := fmt.Sprintf("%s/%s", HidGadgetPath, "bDeviceProtocol")
+ 	hidMaxPkt := fmt.Sprintf("%s/%s", HidGadgetPath, "bMaxPacketSize0")
+ 	hidStrVen := fmt.Sprintf("%s/%s", HidGadgetPath, "strings/0x409/manufacturer")
+ 	hidStrPrd := fmt.Sprintf("%s/%s", HidGadgetPath, "strings/0x409/product")
+@@ -605,6 +611,19 @@ func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 		return "set idProduct failed", err
+ 	}
+ 
++	if err := os.WriteFile(hidDevCls, []byte(devCls), 0o666); err != nil {
++		log.Errorf("set bDeviceClass failed: %s", err)
++		return "set bDeviceClass failed", err
++	}
++	if err := os.WriteFile(hidDevSub, []byte(devSub), 0o666); err != nil {
++		log.Errorf("set bDeviceSubClass failed: %s", err)
++		return "set bDeviceSubClass failed", err
++	}
++	if err := os.WriteFile(hidDevPrt, []byte(devPrt), 0o666); err != nil {
++		log.Errorf("set bDeviceProtocol failed: %s", err)
++		return "set bDeviceProtocol failed", err
++	}
++
+ 	if err := os.WriteFile(hidMaxPkt, []byte(maxPkt), 0o666); err != nil {
+ 		log.Errorf("set bMaxPacketSize0 failed: %s", err)
+ 		return "set bMaxPacketSize0 failed", err
+@@ -656,6 +675,12 @@ func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 		return "set strings/0x409/configuration failed", err
+ 	}
+ 
++	othOsDescPath := fmt.Sprintf("%s/%s", HidGadgetPath, "os_desc")
++	othOsDescSymLink := fmt.Sprintf("%s/%s", othOsDescPath, "c.1")
++
++	othOsDescEn := false
++	othOsDescOn, _ := isFuncExist(othOsDescSymLink)
++
+ 	// configure non-hid functions
+ 	for _, othfunc := range []string{"mass_storage.disk0", "ncm.usb0", "rndis.usb0"} {
+ 		othFunction := fmt.Sprintf("%s/%s", HidFuncPath, othfunc)
+@@ -684,6 +709,47 @@ func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 			}
+ 		}
+ 
++		if othFuncOn && othModeOn && othfunc == "rndis.usb0" {
++			othOsDescEn = true
++			othFuncClass := fmt.Sprintf("%s/%s", othFunction, "class")
++			othFuncSubclass := fmt.Sprintf("%s/%s", othFunction, "subclass")
++			othFuncProtocol := fmt.Sprintf("%s/%s", othFunction, "protocol")
++			othFuncCompatibleId := fmt.Sprintf("%s/%s", othFunction, "os_desc/interface.rndis/compatible_id")
++			othFuncSubCompatibleId := fmt.Sprintf("%s/%s", othFunction, "os_desc/interface.rndis/sub_compatible_id")
++
++			if err := os.WriteFile(othFuncClass, []byte("e0"), 0o666); err != nil {
++				log.Errorf("set class failed: %s", err)
++				return "set class failed", err
++			}
++			if err := os.WriteFile(othFuncSubclass, []byte("01"), 0o666); err != nil {
++				log.Errorf("set subclass failed: %s", err)
++				return "set subclass failed", err
++			}
++			if err := os.WriteFile(othFuncProtocol, []byte("03"), 0o666); err != nil {
++				log.Errorf("set protocol failed: %s", err)
++				return "set protocol failed", err
++			}
++
++			if err := os.WriteFile(othFuncCompatibleId, []byte("RNDIS"), 0o666); err != nil {
++				log.Errorf("set compatible_id failed: %s", err)
++				return "set compatible_id failed", err
++			}
++			if err := os.WriteFile(othFuncSubCompatibleId, []byte("5162001"), 0o666); err != nil {
++				log.Errorf("set sub_compatible_id failed: %s", err)
++				return "set sub_compatible_id failed", err
++			}
++		}
++
++		if othFuncOn && othModeOn && othfunc == "ncm.usb0" {
++			othOsDescEn = true
++			othFuncCompatibleId := fmt.Sprintf("%s/%s", othFunction, "os_desc/interface.ncm/compatible_id")
++
++			if err := os.WriteFile(othFuncCompatibleId, []byte("WINNCM"), 0o666); err != nil {
++				log.Errorf("set compatible_id failed: %s", err)
++				return "set compatible_id failed", err
++			}
++		}
++
+ 		if othFuncOn && othConfOn && !othModeOn {
+ 			if err := os.Remove(othSymLink); err != nil {
+ 				log.Fatalf("Could not remove symlink: %v", err)
+@@ -697,6 +763,44 @@ func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 		}
+ 	}
+ 
++	osDescUse := "0"
++	osDescVenCode := "0x00"
++	osDescQwSign := "       "
++	if othOsDescEn {
++		osDescUse = "1"
++		osDescVenCode = "0xCD"
++		osDescQwSign = "MSFT100"
++	}
++
++	othOsDescUse := fmt.Sprintf("%s/%s", othOsDescPath, "use")
++	othOsDescVenCode := fmt.Sprintf("%s/%s", othOsDescPath, "b_vendor_code")
++	othOsDescQwSign := fmt.Sprintf("%s/%s", othOsDescPath, "qw_sign")
++
++	if err := os.WriteFile(othOsDescUse, []byte(osDescUse), 0o666); err != nil {
++		log.Errorf("set use failed: %s", err)
++		return "set use failed", err
++	}
++	if err := os.WriteFile(othOsDescVenCode, []byte(osDescVenCode), 0o666); err != nil {
++		log.Errorf("set b_vendor_code failed: %s", err)
++		return "set b_vendor_code failed", err
++	}
++	if err := os.WriteFile(othOsDescQwSign, []byte(osDescQwSign), 0o666); err != nil {
++		log.Errorf("set qw_sign failed: %s", err)
++		return "set qw_sign failed", err
++	}
++
++	if othOsDescOn && !othOsDescEn {
++		if err := os.Remove(othOsDescSymLink); err != nil {
++			log.Fatalf("Could not remove symlink: %v", err)
++			return "unlink function failed", err
++		}
++	} else if !othOsDescOn && othOsDescEn {
++		if err := os.Symlink(HidConfPath, othOsDescSymLink); err != nil {
++			log.Errorf("Could not create symlink: %v", err)
++			return "symlink function failed", err
++		}
++	}
++
+ 	if err := enable(); err != nil {
+ 		log.Errorf("enable hid failed: %s", err)
+ 		return "enable hid failed", err
+-- 
+2.34.1
+
