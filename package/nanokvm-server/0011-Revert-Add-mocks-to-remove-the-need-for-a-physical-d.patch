@@ -18,7 +18,7 @@ index 130e803..328342d 100644
 --- a/web/package.json
 +++ b/web/package.json
 @@ -5,7 +5,6 @@
-   "type": "module",
+   },
    "scripts": {
      "dev": "vite",
 -    "mocked": "vite --mode mocked",
@@ -34,8 +34,8 @@ index 130e803..328342d 100644
      "prettier": "^3.8.1",
      "prettier-plugin-tailwindcss": "^0.6.14",
 @@ -66,10 +64,5 @@
-     "vite": "7.3.2",
-     "vite-tsconfig-paths": "^4.3.2",
+     "typescript-eslint": "^8.59.0",
+     "vite": "8.2.0",
      "yaml": "^2.8.3"
 -  },
 -  "msw": {
@@ -420,21 +420,35 @@ deleted file mode 100644
 index 3cb0487..0000000
 --- a/web/src/mocks/browser.ts
 +++ /dev/null
-@@ -1,14 +0,0 @@
--import { setupWorker } from 'msw/browser'
--import { http, HttpResponse } from 'msw'
+@@ -1,28 +0,0 @@
+-import { http, HttpResponse } from 'msw';
+-import { setupWorker } from 'msw/browser';
+-
+-let isLoggedIn = false;
 -
 -export const handlers = [
 -  http.post('/api/auth/login', () => {
+-    isLoggedIn = true;
 -    return HttpResponse.json({
--        code: 0,
--        data: {
--            token: 'mocked_token',
--        },
--    })
+-      code: 0,
+-      data: {}
+-    });
 -  }),
--]
--export const worker = setupWorker(...handlers)
+-  http.get('/api/auth/account', () => {
+-    if (!isLoggedIn) {
+-      return HttpResponse.json('unauthorized', { status: 401 });
+-    }
+-    return HttpResponse.json({
+-      code: 0,
+-      data: { username: 'admin', role: 'admin' }
+-    });
+-  }),
+-  http.post('/api/auth/logout', () => {
+-    isLoggedIn = false;
+-    return HttpResponse.json({ code: 0 });
+-  })
+-];
+-export const worker = setupWorker(...handlers);
 -- 
 2.34.1
 

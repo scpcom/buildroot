@@ -47,7 +47,7 @@ index bba2780..e92ec22 100644
 +		}
 +	}
 +
- 	hidmode, _ := getHidMode()
+ 	hidmode, _ := GetMode()
  
  	msg, err := setHidMode(hidmode, req.Mode)
 -- 

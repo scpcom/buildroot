@@ -40,7 +40,7 @@ index 35d3b0d..4e58f61 100644
 -		}
 -	}
 -
- 	hidmode, _ := getHidMode()
+ 	hidmode, _ := GetMode()
  	wowmode, _ := getWoWMode();
  
 @@ -65,5 +49,11 @@ func (s *Service) SetBiosMode(c *gin.Context) {
@@ -106,7 +106,7 @@ index a9c8dfb..cf8a0b2 100644
  	rsp.OkRsp(c)
  }
  
-@@ -240,6 +243,23 @@ func getHidMode() (string, error) {
+@@ -240,6 +243,23 @@ func GetMode() (string, error) {
  	return mode, nil
  }
  
@@ -209,7 +209,7 @@ index a202639..25cd270 100644
 -		}
 -	}
 -
- 	hidmode, _ := getHidMode()
+ 	hidmode, _ := GetMode()
  	biosmode, _ := getBiosMode();
  
 @@ -65,5 +49,11 @@ func (s *Service) SetWoWMode(c *gin.Context) {

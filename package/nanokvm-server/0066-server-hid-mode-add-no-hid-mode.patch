@@ -54,7 +54,7 @@ index 56c23cd..07794dd 100644
 @@ -198,11 +206,13 @@ func copyModeFile(srcScript string) error {
  }
  
- func getHidMode() (string, error) {
+ func GetMode() (string, error) {
 +	hidFunction := fmt.Sprintf("%s/%s", HidConfPath, "hid.GS0")
 +	hidFuncOn, _ := isFuncExist(hidFunction)
  	hidGadgetOn, _ := isFuncExist(HidGadgetPath)

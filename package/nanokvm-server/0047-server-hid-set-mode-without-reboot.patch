@@ -76,7 +76,7 @@ index 9a77cb9..5cbb76c 100644
  }
  
  func disable() (error) {
-@@ -156,3 +172,200 @@ func getHidMode() (string, error) {
+@@ -156,3 +172,200 @@ func GetMode() (string, error) {
  
  	return mode, nil
  }

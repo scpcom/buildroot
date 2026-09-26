@@ -69,14 +69,13 @@ index 98bd6fc..f32fec1 100644
  			return -1;
  		}
  		for (int i = 0; i < stream->count; i++) {
-@@ -2388,13 +2394,13 @@ int mmf_venc_free(int ch) {
+@@ -2388,12 +2394,13 @@ int mmf_venc_free(int ch) {
  		return s32Ret;
  	}
  
 -	s32Ret = CVI_VENC_ReleaseStream(ch, venc_stream);
 -	if (s32Ret != CVI_SUCCESS) {
 -		printf("CVI_VENC_ReleaseStream failed with %#x\n", s32Ret);
--		return s32Ret;
 -	}
 -
  	if (venc_stream->pstPack) {

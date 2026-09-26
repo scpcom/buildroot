@@ -39,15 +39,15 @@ index bba4a08..f281005 100644
 --- a/server/router/hid.go
 +++ b/server/router/hid.go
 @@ -14,6 +14,9 @@ func hidRouter(r *gin.Engine) {
- 	api.GET("/hid/shortcut/leader-key", service.GetLeaderKey)  // set shortcut leader key
- 	api.POST("/hid/shortcut/leader-key", service.SetLeaderKey) // set shortcut leader key
+ 	api.GET("/hid/shortcuts", service.GetShortcuts)           // get shortcuts
+ 	api.GET("/hid/shortcut/leader-key", service.GetLeaderKey) // get shortcut leader key
  
 +	api.GET("/hid/bios", service.GetBiosMode)  // get hid bios mode
 +	api.POST("/hid/bios", service.SetBiosMode) // set hid bios mode
 +
- 	api.GET("/hid/mode", service.GetHidMode)  // get hid mode
- 	api.POST("/hid/mode", service.SetHidMode) // set hid mode
- 	api.POST("/hid/reset", service.ResetHid)  // reset hid
+ 	api.GET("/hid/mode", service.GetHidMode) // get hid mode
+ 	api.GET("/hid/leds", service.GetKeyboardLedStatus)
+ 
 diff --git a/server/service/hid/bios.go b/server/service/hid/bios.go
 new file mode 100644
 index 0000000..bba2780
@@ -96,7 +96,7 @@ index 0000000..bba2780
 +		return
 +	}
 +
-+	hidmode, _ := getHidMode()
++	hidmode, _ := GetMode()
 +
 +	msg, err := setHidMode(hidmode, req.Mode)
 +	if err != nil {
@@ -247,7 +247,7 @@ index f63f6c3..7461725 100644
 --- a/web/src/pages/desktop/menu/mouse/index.tsx
 +++ b/web/src/pages/desktop/menu/mouse/index.tsx
 @@ -9,6 +9,7 @@ import { mouseModeAtom, mouseStyleAtom, scrollIntervalAtom } from '@/jotai/mouse
- 
+ import { OriginalResolution } from '../screen/original-resolution.tsx';
  import { Cursor } from './cursor.tsx';
  import { Direction } from './direction.tsx';
 +import { BiosMode } from './bios-mode.tsx';
@@ -255,9 +255,9 @@ index f63f6c3..7461725 100644
  import { MouseMode } from './mouse-mode.tsx';
  import { ResetHid } from './reset-hid.tsx';
 @@ -45,6 +46,7 @@ export const Mouse = () => {
-       <Speed />
        <Divider style={{ margin: '10px 0' }} />
  
+       <OriginalResolution />
 +      <BiosMode />
        <HidMode />
        <ResetHid />

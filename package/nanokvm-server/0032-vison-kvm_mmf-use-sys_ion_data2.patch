@@ -26,8 +26,8 @@ index 054d812..b83cff6 100644
  #include "cvi_ae_comm.h"
  #include "cvi_awb_comm.h"
 @@ -297,7 +304,7 @@ static int _free_leak_memory_of_ion(void)
- 			if (strcmp(buffer_name, "VI_DMA_BUF")
- 				&& strcmp(buffer_name, "ISP_SHARED_BUFFER_0"))
+ 			// server starts. Releasing it here makes SAMPLE_PLAT_VI_INIT fail.
+ 			if (strcmp(buffer_name, "VI_DMA_BUF"))
  				continue;
 -			struct sys_ion_data_new ion_data = {
 +			struct sys_ion_data2 ion_data = {

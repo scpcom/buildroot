@@ -4,12 +4,12 @@
 #
 ################################################################################
 
-NANOKVM_SERVER_VERSION = 3b2ba7c0c1214f44da9d328f90bbdd025fac0413
+NANOKVM_SERVER_VERSION = bd070b2f5ce27d22618e8a1c8d2bdca543429882
 NANOKVM_SERVER_SITE = https://github.com/sipeed/NanoKVM
 NANOKVM_SERVER_SITE_METHOD = git
 NANOKVM_SERVER_UPDATE_URL = https://scpcom.github.io/nanokvm
 
-NANOKVM_SERVER_GO_VENDOR_REF = fd68bdc39cf813361c6d69e76c80f45b4df16c77
+NANOKVM_SERVER_GO_VENDOR_REF = be36022ef0ab69ec7af88080bff556d6488de34c
 NANOKVM_SERVER_GO_VENDOR_URL = https://github.com/scpcom/nanokvm-server-vendor
 
 NANOKVM_SERVER_NODE_MODULES_REF = c50a1e50c2b4ee3a88124d28b839879916d30595
@@ -176,6 +176,7 @@ define NANOKVM_SERVER_BUILD_CMDS
 		else \
 			rm -rf $(@D)/../maix-cdk-$(MAIX_CDK_VERSION)/components/vision ; \
 		fi ; \
+		[ -e $(@D)/../maix-cdk-$(MAIX_CDK_VERSION)/examples/additional ] || ln -s ../components $(@D)/../maix-cdk-$(MAIX_CDK_VERSION)/examples/additional ; \
 		rsync -avpPxH $(@D)/support/sg2002/additional/ $(@D)/../maix-cdk-$(MAIX_CDK_VERSION)/components/ ; \
 		rm -rf $(@D)/../maix-cdk-$(MAIX_CDK_VERSION)/examples/kvm_vision_test ; \
 		rsync -avpPxH $(@D)/support/sg2002/kvm_vision_test $(@D)/../maix-cdk-$(MAIX_CDK_VERSION)/examples/ ; \

@@ -95,34 +95,6 @@ index 90e4e0b..98bd6fc 100644
  	}
  
  	free(pstVideoFrame);
-@@ -1465,14 +1498,21 @@ int mmf_vi_frame_pop(int ch, void **data, int *len, int *width, int *height, int
- }
- 
- void mmf_vi_frame_free(int ch) {
-+	if (ch < 0 || ch >= MMF_VI_MAX_CHN) {
-+		printf("invalid ch %d\n", ch);
-+		return;
-+	}
-+
- 	VIDEO_FRAME_INFO_S *frame = &priv.vi_frame[ch];
- 	int image_size = frame->stVFrame.u32Length[0]
--                        + frame->stVFrame.u32Length[1]
--				        + frame->stVFrame.u32Length[2];
--	CVI_SYS_Munmap(frame->stVFrame.pu8VirAddr[0], image_size);
--	if (CVI_VPSS_ReleaseChnFrame(0, ch, frame) != 0) {
--		SAMPLE_PRT("CVI_VI_ReleaseChnFrame NG\n");
--	}
-+		       + frame->stVFrame.u32Length[1]
-+		       + frame->stVFrame.u32Length[2];
-+	if (frame->stVFrame.pu8VirAddr[0]) {
-+		CVI_SYS_Munmap(frame->stVFrame.pu8VirAddr[0], image_size);
-+		frame->stVFrame.pu8VirAddr[0] = NULL;
-+	}
-+	if (CVI_VPSS_ReleaseChnFrame(0, ch, frame) != 0)
-+			printf("CVI_VI_ReleaseChnFrame failed\n");
- }
- 
- int mmf_region_frame_push(int ch, void *data, int len)
 -- 
 2.34.1
 

@@ -32,8 +32,8 @@ index cf8a0b2..f7dadd9 100644
  		return
  	}
  
--	if mode, _ := getHidMode(); req.Mode == mode {
-+	mode, _ := getHidMode();
+-	if mode, _ := GetMode(); req.Mode == mode {
++	mode, _ := GetMode();
 +	biosmode, _ := getBiosMode();
 +	wowmode, _ := getBiosMode();
 +
@@ -82,7 +82,7 @@ diff --git a/web/src/api/hid.ts b/web/src/api/hid.ts
 index b64b55d..bb5c958 100644
 --- a/web/src/api/hid.ts
 +++ b/web/src/api/hid.ts
-@@ -23,15 +23,30 @@ export function setBiosMode(mode: string) {
+@@ -23,20 +23,35 @@ export function setBiosMode(mode: string) {
    return http.post('/api/hid/bios', data);
  }
  
@@ -102,6 +102,11 @@ index b64b55d..bb5c958 100644
  // get hid mode
  export function getHidMode() {
    return http.get('/api/hid/mode');
+ }
+ 
+ // get remote keyboard lock LED status
+ export function getKeyboardLedStatus() {
+   return http.get('/api/hid/leds');
  }
  
  // set hid mode

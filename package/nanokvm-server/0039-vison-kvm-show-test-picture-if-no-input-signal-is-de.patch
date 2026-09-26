@@ -19,12 +19,12 @@ index 0afd8f8..8f7af14 100644
 +#include "cvi_buffer.h"
 +
  #include "kvm_vision.h"
- 
- #define default_venc_chn        1
+ #include "vi_state_shared.hpp"
+ #include "internal/vi_state_writer.hpp"
 @@ -79,6 +82,7 @@ typedef struct {
-     uint8_t hdmi_try_rounds = 0;
      uint8_t vi_detect_state = 0;
      uint8_t venc_auto_recyc = 1;
+     uint8_t fresh_frame_count = 0;
 +    image::Image *no_signal_img = NULL;
  } kvmv_cfg_t;
  
@@ -223,8 +223,8 @@ index 0afd8f8..8f7af14 100644
 +                img = kvmv_cfg.no_signal_img->copy();
 +        }
          if(img != NULL){
-             // frame detect
-             if(_type == VENC_MJPEG && kvmv_cfg.frame_detact != 0){
+             if(kvmv_cfg.fresh_frame_count != 0){
+                 // Do not restart VI after HDMI idle. Reopening the MMF
 @@ -1729,6 +1729,8 @@ void free_all_kvmv_data()
              kvmv_data_buffer[i].p_img_data = NULL;
          }

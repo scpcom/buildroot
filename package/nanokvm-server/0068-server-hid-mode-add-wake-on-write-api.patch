@@ -42,9 +42,9 @@ index f281005..36290ae 100644
 +	api.GET("/hid/wow", service.GetWoWMode)  // get hid wake on write mode
 +	api.POST("/hid/wow", service.SetWoWMode) // set hid wake on write mode
 +
- 	api.GET("/hid/mode", service.GetHidMode)  // get hid mode
- 	api.POST("/hid/mode", service.SetHidMode) // set hid mode
- 	api.POST("/hid/reset", service.ResetHid)  // reset hid
+ 	api.GET("/hid/mode", service.GetHidMode) // get hid mode
+ 	api.GET("/hid/leds", service.GetKeyboardLedStatus)
+ 
 diff --git a/server/service/hid/bios.go b/server/service/hid/bios.go
 index f9f7c77..35d3b0d 100644
 --- a/server/service/hid/bios.go
@@ -52,7 +52,7 @@ index f9f7c77..35d3b0d 100644
 @@ -57,8 +57,9 @@ func (s *Service) SetBiosMode(c *gin.Context) {
  	}
  
- 	hidmode, _ := getHidMode()
+ 	hidmode, _ := GetMode()
 +	wowmode, _ := getWoWMode();
  
 -	msg, err := setHidMode(hidmode, req.Mode)
@@ -97,7 +97,7 @@ index 07794dd..a9c8dfb 100644
  	if err != nil {
  		rsp.ErrRsp(c, -4, msg)
  		return
-@@ -231,7 +240,7 @@ func getHidMode() (string, error) {
+@@ -231,7 +240,7 @@ func GetMode() (string, error) {
  	return mode, nil
  }
  
@@ -218,7 +218,7 @@ index 0000000..a202639
 +		}
 +	}
 +
-+	hidmode, _ := getHidMode()
++	hidmode, _ := GetMode()
 +	biosmode, _ := getBiosMode();
 +
 +	msg, err := setHidMode(hidmode, biosmode, req.Mode)

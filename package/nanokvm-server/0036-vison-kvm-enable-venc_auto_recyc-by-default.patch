@@ -17,9 +17,9 @@ index 6642a99..7202a92 100644
      uint8_t vi_detect_state = 0;
 -    uint8_t venc_auto_recyc = 0;
 +    uint8_t venc_auto_recyc = 1;
+     uint8_t fresh_frame_count = 0;
  } kvmv_cfg_t;
  
- typedef struct {
 -- 
 2.34.1
 

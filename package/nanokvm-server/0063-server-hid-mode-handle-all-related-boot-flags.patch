@@ -74,7 +74,7 @@ index a0371c5..8936b45 100644
 @@ -182,6 +196,13 @@ func copyModeFile(srcScript string) error {
  }
  
- func getHidMode() (string, error) {
+ func GetMode() (string, error) {
 +	hidGadgetOn, _ := isFuncExist(HidGadgetPath)
 +
 +	// gadget is disabled
