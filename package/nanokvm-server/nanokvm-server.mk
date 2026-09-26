@@ -52,9 +52,10 @@ HOST_NODEJS_BIN_ENV = $(HOST_CONFIGURE_OPTS) \
 
 HOST_COREPACK = $(HOST_NODEJS_BIN_ENV) $(HOST_DIR)/bin/corepack
 
-NANOKVM_SERVER_PNPM_VERSION = 10.29.3
-# wget -q -O- https://registry.npmjs.org/pnpm | jq -C '.versions."10.29.3".dist.shasum
-NANOKVM_SERVER_PNPM_SHA_SUM = f7315fb659932216d489e3ed4c14f47bc58ec6c6
+NANOKVM_SERVER_PNPM_VERSION = 11.28.0
+# wget -q -O- https://registry.npmjs.org/pnpm | jq -C '.versions."11.28.0".dist.shasum'
+NANOKVM_SERVER_PNPM_SHA_SUM = 78f80b214afc6750c28d1c26007510f02aa3aa4d
+NANOKVM_SERVER_PNPM_STORE_VERSION = v11
 
 NANOKVM_SERVER_NODE_CACHE_DIR = $(NANOKVM_SERVER_XDG_CACHE_DIR)/node
 NANOKVM_SERVER_PNPM_CACHE_DIR = $(NANOKVM_SERVER_XDG_CACHE_DIR)/pnpm
@@ -203,8 +204,8 @@ define NANOKVM_SERVER_BUILD_CMDS
 	cd $(@D)/$(NANOKVM_SERVER_GOMOD)/vendor && git checkout $(NANOKVM_SERVER_GO_VENDOR_REF)
 	cd $(@D)/web && git clone --depth 1 $(NANOKVM_SERVER_NODE_MODULES_URL) node_modules
 	cd $(@D)/web/node_modules && git checkout $(NANOKVM_SERVER_NODE_MODULES_REF)
-	cd $(@D)/web && sed -i 's|"storeDir": ".*"|"storeDir": "'$(NANOKVM_SERVER_PNPM_SHARE_DIR)'/store/v10"|g' node_modules/.modules.yaml
-	cd $(@D)/web && sed -i 's|^storeDir: .*|storeDir: '$(NANOKVM_SERVER_PNPM_SHARE_DIR)'/store/v10|g' node_modules/.modules.yaml
+	cd $(@D)/web && sed -i 's|"storeDir": ".*"|"storeDir": "'$(NANOKVM_SERVER_PNPM_SHARE_DIR)'/store/$(NANOKVM_SERVER_PNPM_STORE_VERSION)"|g' node_modules/.modules.yaml
+	cd $(@D)/web && sed -i 's|^storeDir: .*|storeDir: '$(NANOKVM_SERVER_PNPM_SHARE_DIR)'/store/$(NANOKVM_SERVER_PNPM_STORE_VERSION)|g' node_modules/.modules.yaml
 	mkdir -p $(NANOKVM_SERVER_NODE_CACHE_DIR)
 	[ -e $(NANOKVM_SERVER_NODE_CACHE_DIR)/corepack ] || mv $(@D)/web/node_modules/.cache/node/corepack $(NANOKVM_SERVER_NODE_CACHE_DIR)/
 	[ -e $(NANOKVM_SERVER_NODE_CACHE_DIR)/corepack/v1 ] || ln -s . $(NANOKVM_SERVER_NODE_CACHE_DIR)/corepack/v1
@@ -231,8 +232,8 @@ define NANOKVM_SERVER_BUILD_CMDS
 	#cd $(@D)/web && \
 	#$(HOST_COREPACK) install -g pnpm@$(NANOKVM_SERVER_PNPM_VERSION)+sha1.$(NANOKVM_SERVER_PNPM_SHA_SUM) && \#
 	cd $(@D)/web && $(HOST_COREPACK) use pnpm@$(NANOKVM_SERVER_PNPM_VERSION)+sha1.$(NANOKVM_SERVER_PNPM_SHA_SUM)
-	#cd $(@D)/web && $(HOST_COREPACK) pnpm fetch --store-dir $(NANOKVM_SERVER_PNPM_SHARE_DIR)/store/v10
-	cd $(@D)/web && $(HOST_COREPACK) pnpm install --store-dir $(NANOKVM_SERVER_PNPM_SHARE_DIR)/store/v10 -r --offline
+	#cd $(@D)/web && $(HOST_COREPACK) pnpm fetch --store-dir $(NANOKVM_SERVER_PNPM_SHARE_DIR)/store/$(NANOKVM_SERVER_PNPM_STORE_VERSION)
+	cd $(@D)/web && $(HOST_COREPACK) pnpm install --store-dir $(NANOKVM_SERVER_PNPM_SHARE_DIR)/store/$(NANOKVM_SERVER_PNPM_STORE_VERSION) -r --offline
 	cd $(@D)/web && $(HOST_COREPACK) pnpm build
 endef
 
