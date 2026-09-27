@@ -1,0 +1,43 @@
+From 22f59f4d92dfeb157008d4469986feef86d52533 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 27 Sep 2026 03:11:11 +0200
+Subject: [PATCH] server: hid: mode: fix writing empty strings
+
+---
+ server/service/hid/status.go | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/server/service/hid/status.go b/server/service/hid/status.go
+index 6eb71f5..8332440 100644
+--- a/server/service/hid/status.go
++++ b/server/service/hid/status.go
+@@ -576,7 +576,7 @@ func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 	if hidmode == ModeHidOnly {
+ 		usbFlag = "0x0101"
+ 		devFlag = "0x0623"
+-		strSNr = ""
++		strSNr = "\n"
+ 	} else if hidmode == ModeKbdOnly {
+ 		usbFlag = "0x0001"
+ 		devFlag = "0x0102"
+@@ -585,7 +585,7 @@ func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 		maxPkt = "0x08"
+ 		strVen = "Alps Electric"
+ 		strPrd = "Apple USB Keyboard"
+-		strSNr = ""
++		strSNr = "\n"
+ 	}
+ 
+ 	bootIdVen, _ := isFuncExist(UsbIdVenFile)
+@@ -682,7 +682,7 @@ func setHidMode(hidmode, biosmode, wowmode string) (string, error) {
+ 	} else if hidmode == ModeKbdOnly {
+ 		bmAttr = "0xA0"
+ 		maxPwr = "50"
+-		strCnf = ""
++		strCnf = "\n"
+ 	}
+ 
+ 	hidBmAttr := fmt.Sprintf("%s/%s", HidConfPath, "bmAttributes")
+-- 
+2.34.1
+
