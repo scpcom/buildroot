@@ -1,0 +1,25 @@
+From f5d5a03a793bc7890d2fe112f9bbca23299b2020 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 27 Sep 2026 02:58:20 +0200
+Subject: [PATCH] usbdev: set bcdUSB and bcdDevice
+
+---
+ kvmapp/system/init.d/S03usbdev | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/kvmapp/system/init.d/S03usbdev b/kvmapp/system/init.d/S03usbdev
+index 1bd7c66..e1f2a23 100755
+--- a/kvmapp/system/init.d/S03usbdev
++++ b/kvmapp/system/init.d/S03usbdev
+@@ -9,6 +9,8 @@ start_usb_dev(){
+     mkdir g0
+     cd g0
+ 
++    echo 0x0200 > bcdUSB
++    echo 0x0510 > bcdDevice
+     # echo 0x3346 > idVendor
+     # echo 0x1009 > idProduct
+     if [ -e /boot/usb.vid ]
+-- 
+2.34.1
+
