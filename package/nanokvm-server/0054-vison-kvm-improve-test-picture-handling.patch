@@ -1,0 +1,116 @@
+From 8a3f24d12bfc4a96d57a1baf71571005b85d3082 Mon Sep 17 00:00:00 2001
+From: scpcom <scpcom@gmx.de>
+Date: Sun, 4 Oct 2026 15:49:09 +0200
+Subject: [PATCH] vison: kvm: improve test picture handling
+
+---
+ .../sg2002/additional/kvm/src/kvm_vision.cpp  | 54 ++++++++++++-------
+ 1 file changed, 36 insertions(+), 18 deletions(-)
+
+diff --git a/support/sg2002/additional/kvm/src/kvm_vision.cpp b/support/sg2002/additional/kvm/src/kvm_vision.cpp
+index 4e6b77c..85357cc 100644
+--- a/support/sg2002/additional/kvm/src/kvm_vision.cpp
++++ b/support/sg2002/additional/kvm/src/kvm_vision.cpp
+@@ -416,6 +416,24 @@ static uint8_t *_prepare_image(int width, int height, int format)
+ 	return NULL;
+ }
+ 
++static void init_no_signal_img(void)
++{
++	uint16_t _img_width = kvmv_cfg.vpss_width;
++	uint16_t _img_height = kvmv_cfg.vpss_height;
++
++	if (_img_width == 0 || _img_height == 0) {
++		_img_width = default_vpss_width;
++		_img_height = default_vpss_height;
++	}
++	kvmv_cfg.no_signal_img = new image::Image(_img_width, _img_height, image::Format::FMT_YVU420SP);
++	if (kvmv_cfg.no_signal_img) {
++		uint8_t *rgb_data = _prepare_image(kvmv_cfg.no_signal_img->width(), kvmv_cfg.no_signal_img->height(), PIXEL_FORMAT_RGB_888);
++		_rgb888_to_nv21(rgb_data, kvmv_cfg.no_signal_img->width(), kvmv_cfg.no_signal_img->height(), (uint8_t*)kvmv_cfg.no_signal_img->data());
++		free(rgb_data);
++	}
++}
++
++
+ // ====HDMI RES==================================================
+ 
+ uint16_t hdmi_res_list[][2] = {
+@@ -1945,6 +1963,7 @@ void set_venc_auto_recyc(uint8_t _enable)
+  **********************************************************************************/
+ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _qlty, uint8_t** _pp_kvm_data, uint32_t* _p_kvmv_data_size)
+ {
++    int res = 0;
+     *_pp_kvm_data = NULL;
+     *_p_kvmv_data_size = 0;
+     static uint8_t frame_undetact_count = 0;
+@@ -1959,16 +1978,13 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
+         return -5;
+     }
+     if (kvmv_cfg.hdmi_res_err == ERROR_RES){
+-        pthread_mutex_unlock(&vi_mutex);
+-        return -7;
++        res = -7;
+     }
+     if (kvmv_cfg.hdmi_res_type == UNSUPPORT_RES){
+-        pthread_mutex_unlock(&vi_mutex);
+-        return -6;
++        res = -6;
+     }
+     if (kvmv_cfg.vi_detect_state == 1){
+-        pthread_mutex_unlock(&vi_mutex);
+-        return -4;
++        res = -4;
+     }
+     uint8_t try_num = 0;
+     do {
+@@ -2005,22 +2021,17 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
+             cam->hmirror(1);
+             cam->vflip(1);
+             if (kvmv_cfg.no_signal_img != NULL) delete kvmv_cfg.no_signal_img;
+-            kvmv_cfg.no_signal_img = new image::Image(kvmv_cfg.vpss_width, kvmv_cfg.vpss_height, image::Format::FMT_YVU420SP);
+-            if (kvmv_cfg.no_signal_img) {
+-                uint8_t *rgb_data = _prepare_image(kvmv_cfg.no_signal_img->width(), kvmv_cfg.no_signal_img->height(), PIXEL_FORMAT_RGB_888);
+-                _rgb888_to_nv21(rgb_data, kvmv_cfg.no_signal_img->width(), kvmv_cfg.no_signal_img->height(), (uint8_t*)kvmv_cfg.no_signal_img->data());
+-                free(rgb_data);
+-            }
++            init_no_signal_img();
+ 
+ 			kvmv_cfg.reinit_flag = 0;
+         }
+         // debug("[kvmv]befor read img: %d \r\n", (int)(time::time_ms() - start_time));
+-        image::Image *img = cam->read();
++        image::Image *img = NULL;
++        if (res == 0) {
++            img = cam->read();
++        }
+         // debug("[kvmv]read img: %d \r\n", (int)(time::time_ms() - start_time));
+ 
+-        if(img == NULL && kvmv_cfg.no_signal_img != NULL) {
+-                img = kvmv_cfg.no_signal_img->copy();
+-        }
+         if(img != NULL){
+             if(kvmv_cfg.fresh_frame_count != 0){
+                 // Do not restart VI after HDMI idle. Reopening the MMF
+@@ -2029,9 +2040,16 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
+                 // instead; the camera buffer contains at most three frames.
+                 kvmv_cfg.fresh_frame_count--;
+                 delete img;
+-                continue;
++                img = NULL;
+             }
+-
++        }
++        if(img == NULL && kvmv_cfg.no_signal_img == NULL) {
++                init_no_signal_img();
++        }
++        if(img == NULL && kvmv_cfg.no_signal_img != NULL) {
++                img = kvmv_cfg.no_signal_img->copy();
++        }
++        if(img != NULL){
+             // frame detect
+             if(_type == VENC_MJPEG && kvmv_cfg.frame_detact != 0){
+                 if(kvmv_cfg.stream_stop == 0){
+-- 
+2.34.1
+
